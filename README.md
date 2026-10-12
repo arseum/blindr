@@ -23,7 +23,7 @@
 
 ## Installer l'app
 
-Ouvre le site sur ton téléphone, puis :
+Ouvre **https://blindr-poker.vercel.app** sur ton téléphone, puis :
 
 - **iPhone / iPad** : dans Safari, bouton Partager → « Sur l'écran d'accueil ».
 - **Android** : le bouton « Installer » apparaît dans Config et dans les Réglages.

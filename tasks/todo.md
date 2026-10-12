@@ -102,7 +102,9 @@ Limites de la PWA sur iPhone, reportées à la version native :
 - [ ] Timer en notification / écran verrouillé (Live Activity), notifications de changement de niveau
 
 ## Phase 5 — Publication
-- [ ] Hébergement (ex. Cloudflare Pages) + domaine
+- [x] Hébergement : Vercel, projet `blindr`, https://blindr-poker.vercel.app (ancienne adresse redirigée)
+- [ ] Domaine à soi (blindr.com/.fr/.io/.app pris ; blindr.poker et blindrpoker.app libres au 2026-10-12)
+- [ ] Vérifier la marque « Blindr » (INPI/EUIPO) : plusieurs domaines blindr.* déjà enregistrés
 - [x] Vrai README (captures dans docs/screenshots)
 - [x] Paquet `blindr`, dépôt GitHub renommé arseum/blindr (l'ancienne adresse redirige)
 - [ ] i18n FR/EN (optionnel V1)
