@@ -25,13 +25,20 @@ Multi-appareils : hors périmètre V1.
 - [x] Décider du sort du sélecteur de thème (clair/sombre ? variantes ?)
 
 ## Phase 3 — UX mobile & tablette
-- [ ] Layout responsive : téléphone portrait, téléphone paysage, tablette
-- [ ] Navigation adaptée (barre du bas sur téléphone, latérale possible sur tablette)
-- [ ] Zones tactiles ≥ 44px, safe areas (encoche, barre home iOS)
-- [ ] Refonte SetupPage, TournamentPage, TablesPage, HistoryPage
-- [ ] Mode « grand écran » (ex-DisplayPage) : tablette/téléphone posé en paysage, lisible à distance
-- [ ] Wake Lock pendant le timer, vibration + son au changement de niveau
-- [ ] Audit accessibilité (skill `design:accessibility-review`)
+Décisions :
+- Navigation à 5 onglets : Config · Timer · Joueurs · Tables · Historique. Barre en bas sur téléphone et tablette portrait, rail à gauche dès `lg` (tablette paysage, ordinateur).
+- Réglages (apparence, son, vibration, écran TV) dans un panneau ouvert par une roue dentée dans l'en-tête des pages.
+- Alertes de niveau (transition, son, vibration) et fin de tournoi gérées au niveau de l'App : elles marchent quel que soit l'onglet ouvert.
+
+- [x] `settingsStore` (son, vibration) + `utils/sound.ts` (Web Audio, sans fichier) + hook `useWakeLock`
+- [x] Hook `useTournamentAlerts` dans App : changement de niveau → transition + son + vibration + effet TV ; dernière minute → bip ; fin de tournoi → overlay
+- [x] Composant `ChipTimer` : 10 jetons, 1 jeton = 1/10 du niveau, le jeton en cours se vide, dernière minute → pulsation
+- [x] Navigation : onglets en bas (safe area) / rail à gauche en `lg`, `PageHeader` + `SettingsSheet`
+- [x] Écran Timer refait (maquette B) : téléphone portrait sur un écran, paysage et tablette en 2 colonnes
+- [x] Nouvelle page Joueurs : recherche, élimination, annulation visible au toucher, re-entry (si autorisé)
+- [x] Tables : déplacer un joueur au toucher (sélection puis table cible) en plus du glisser-déposer
+- [x] App ouvre directement le Timer si un tournoi est en cours
+- [x] Vérification : tests, build, captures téléphone portrait/paysage + tablette, clair/sombre
 
 ## Phase 4 — PWA
 - [ ] `vite-plugin-pwa` : manifest, service worker, fonctionnement hors ligne
@@ -63,3 +70,14 @@ Multi-appareils : hors périmètre V1.
 - `min-h-screen` → `min-h-dvh` partout.
 - Vérifié : 45 tests OK, build OK, captures téléphone clair/sombre + écran TV.
 - Reste (lint préexistant) : `react-hooks/purity` (Math.random/Date.now dans le rendu), `only-export-components`, `_get`, `catch {}` vide.
+
+### Phase 3 — terminée
+- Navigation 5 onglets (Config · Timer · Joueurs · Tables · Historique) : barre en bas, rail à gauche en `lg` et en paysage téléphone (variante `short`).
+- Réglages (apparence, son, vibration, écran TV) dans `SettingsSheet`, ouvert depuis `PageHeader`.
+- `TournamentEvents` (monté dans App) : transition + son + vibration au changement de niveau, double bip à 1 min, écran maintenu allumé pendant le jeu, fin de tournoi détectée quel que soit l'onglet (et restaurée après rechargement via `isEnded`).
+- `ChipTimer` : 10 jetons dimensionnés par container query, jamais de débordement.
+- Timer refait (maquette B), page Joueurs (élimination, annulation visible au toucher, re-entry avec limite par joueur), Tables au toucher.
+- L'accent de toute l'app suit le jeton du niveau (`data-chip` posé par App).
+- Fix : re-entry existait dans le store mais sans bouton ; les positions sont maintenant recalculées comme pour une annulation.
+- Vérifié : 47 tests, build, captures téléphone portrait/paysage, tablette portrait/paysage, clair/sombre, panneau Réglages.
+- Non vérifiable en headless : son, vibration et Wake Lock → à tester sur un vrai téléphone.

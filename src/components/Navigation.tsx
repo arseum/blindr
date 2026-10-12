@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Settings, Clock, Grid, History, SunMoon, X, Monitor, Sun, Moon } from 'lucide-react';
+import React from 'react';
+import { SlidersHorizontal, Timer, Users, LayoutGrid, History } from 'lucide-react';
 import type { Page } from '../types';
 import { useTournamentStore } from '../store/tournamentStore';
-import { useColorScheme, COLOR_SCHEMES, COLOR_SCHEME_LABELS } from '../contexts/ColorSchemeContext';
 
 interface NavigationProps {
   currentPage: Page;
@@ -10,118 +9,55 @@ interface NavigationProps {
 }
 
 const navItems: Array<{ page: Page; label: string; icon: React.ReactNode }> = [
-  { page: 'setup',      label: 'Setup',      icon: <Settings size={20} /> },
-  { page: 'tournament', label: 'Tournoi',    icon: <Clock size={20} /> },
-  { page: 'tables',     label: 'Tables',     icon: <Grid size={20} /> },
-  { page: 'history',    label: 'Historique', icon: <History size={20} /> },
+  { page: 'setup',      label: 'Config',     icon: <SlidersHorizontal size={22} /> },
+  { page: 'tournament', label: 'Timer',      icon: <Timer size={22} /> },
+  { page: 'players',    label: 'Joueurs',    icon: <Users size={22} /> },
+  { page: 'tables',     label: 'Tables',     icon: <LayoutGrid size={22} /> },
+  { page: 'history',    label: 'Historique', icon: <History size={22} /> },
 ];
 
-const SCHEME_ICONS: Record<string, React.ReactNode> = {
-  system: <Monitor size={18} />,
-  light:  <Sun size={18} />,
-  dark:   <Moon size={18} />,
-};
-
+/** Barre d'onglets en bas (téléphone, tablette portrait) ; rail à gauche à partir de lg. */
 export function Navigation({ currentPage, onNavigate }: NavigationProps) {
-  const { tournament } = useTournamentStore();
-  const { scheme, setScheme } = useColorScheme();
-  const [showThemePicker, setShowThemePicker] = useState(false);
+  const isRunning = useTournamentStore(s => !!s.tournament?.isRunning);
 
   return (
-    <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-canvas/70 backdrop-blur-md border-t border-line/60 z-50 md:top-0 md:bottom-auto md:border-t-0 md:border-b">
-        <div className="flex justify-around md:justify-center md:gap-8 max-w-5xl mx-auto">
-          {navItems.map(({ page, label, icon }) => {
-            const isActive = currentPage === page;
-            const hasContent = page === 'tournament' && tournament?.isRunning;
-
-            return (
+    <nav
+      aria-label="Navigation principale"
+      className="
+        fixed z-40 bg-surface/92 backdrop-blur-md border-line
+        inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)]
+        lg:inset-x-auto lg:left-0 lg:top-0 lg:w-24 lg:border-t-0 lg:border-r lg:pb-0 lg:pt-[max(1.25rem,env(safe-area-inset-top))]
+        short:inset-x-auto short:left-0 short:top-0 short:w-[calc(5rem+env(safe-area-inset-left))] short:pl-[env(safe-area-inset-left)] short:border-t-0 short:border-r short:pb-0 short:pt-2 short:overflow-y-auto
+      "
+    >
+      <img src="/favicon.svg" alt="Blindr" className="hidden lg:block w-11 h-11 mx-auto mb-6" />
+      <ul className="flex lg:flex-col lg:gap-1 short:flex-col short:gap-0">
+        {navItems.map(({ page, label, icon }) => {
+          const isActive = currentPage === page;
+          return (
+            <li key={page} className="flex-1 lg:flex-none short:flex-none">
               <button
-                key={page}
                 onClick={() => onNavigate(page)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`
-                  flex flex-col md:flex-row items-center gap-1 md:gap-2
-                  px-4 py-3 text-xs md:text-sm font-medium transition-colors relative
+                  relative w-full min-h-14 flex flex-col items-center justify-center gap-1 lg:py-3 short:min-h-0 short:py-1.5
+                  text-[11px] font-semibold transition-colors
+                  focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent
                   ${isActive ? 'text-accent' : 'text-ink-faint hover:text-ink-muted'}
                 `}
               >
-                {icon}
-                <span className="font-display tracking-wide">{label}</span>
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent md:top-0 md:bottom-auto" />
-                )}
-                {hasContent && !isActive && (
-                  <div className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full animate-pulse" />
-                )}
-              </button>
-            );
-          })}
-
-          {/* Theme button */}
-          <button
-            onClick={() => setShowThemePicker(v => !v)}
-            className={`
-              flex flex-col md:flex-row items-center gap-1 md:gap-2
-              px-4 py-3 text-xs md:text-sm font-medium transition-colors relative
-              ${showThemePicker ? 'text-accent' : 'text-ink-faint hover:text-ink-muted'}
-            `}
-            title="Apparence"
-          >
-            <SunMoon size={20} />
-            <span className="font-display tracking-wide">Apparence</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* Theme picker panel */}
-      {showThemePicker && (
-        <div className="fixed inset-0 z-[60] flex items-end md:items-start justify-center pb-20 md:pt-16 px-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowThemePicker(false)}
-          />
-
-          <div className="relative bg-canvas border border-line rounded-2xl p-5 w-full max-w-sm shadow-2xl z-10">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-accent text-lg font-bold tracking-wide">
-                Apparence
-              </h3>
-              <button
-                onClick={() => setShowThemePicker(false)}
-                className="text-ink-faint hover:text-ink-muted transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {COLOR_SCHEMES.map(t => (
-                <button
-                  key={t}
-                  onClick={() => { setScheme(t); setShowThemePicker(false); }}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left
-                    ${scheme === t
-                      ? 'border-accent bg-accent/10 text-accent'
-                      : 'border-line bg-surface/50 text-ink-muted hover:border-ink-muted hover:text-ink'
-                    }
-                  `}
-                >
-                  <span className="text-ink-muted">{SCHEME_ICONS[t]}</span>
-                  <div>
-                    <div className="font-semibold text-sm">{COLOR_SCHEME_LABELS[t]}</div>
-                    {t === 'system' && <div className="text-xs opacity-70 mt-0.5">Suit le réglage de l'appareil</div>}
-                  </div>
-                  {scheme === t && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-accent" />
+                <span className={`relative grid place-items-center w-12 h-8 rounded-full transition-colors ${isActive ? 'bg-accent/12' : ''}`}>
+                  {icon}
+                  {page === 'tournament' && isRunning && !isActive && (
+                    <span className="absolute top-0.5 right-2.5 w-2 h-2 rounded-full bg-success motion-safe:animate-pulse" />
                   )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+                </span>
+                {label}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }

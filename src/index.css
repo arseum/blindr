@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./styles/tokens.css";
 
+/* Téléphone tenu en paysage : peu de hauteur, on passe en mise en page « rail » */
+@custom-variant short (@media (orientation: landscape) and (max-height: 520px));
+
 /* ============================================================
    BASE
    ============================================================ */
@@ -42,7 +45,42 @@ h1, h2, h3 {
 }
 
 /* ============================================================
-   BARRE DE PROGRESSION DU NIVEAU (remplacée par les jetons en phase 3)
+   CHIP TIMER — 10 jetons, chacun = 1/10 du niveau, dépensés au fil du temps
+   ============================================================ */
+.chip-token {
+  position: relative;
+  flex: none;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  width: var(--chip-size);
+  /* Centre plein + liseré clair, bord à 8 inserts : un vrai jeton de casino */
+  background:
+    radial-gradient(circle closest-side, var(--color-accent) 0 58%, color-mix(in srgb, var(--color-canvas) 75%, transparent) 59% 64%, transparent 65%),
+    repeating-conic-gradient(var(--color-accent) 0 30deg, var(--color-canvas) 30deg 45deg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 14%, transparent);
+  transition: opacity 300ms ease;
+}
+/* Partie dépensée du jeton : recouverte par le fond, comme une aiguille qui tourne */
+.chip-token::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: conic-gradient(var(--color-canvas) 0 var(--spent, 0%), transparent var(--spent, 0%));
+  opacity: 0.85;
+}
+.chip-token[data-state="spent"]::after { --spent: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .chip-timer[data-warning] .chip-token:not([data-state="spent"]) {
+    animation: chipPulse 1s ease-in-out infinite;
+  }
+}
+@keyframes chipPulse {
+  50% { transform: scale(0.88); }
+}
+
+/* ============================================================
+   BARRE DE PROGRESSION DU NIVEAU (écran TV)
    ============================================================ */
 .timer-bar-track {
   height: 4px;

@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Trash2, Trophy } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useHistoryStore } from '../store/historyStore';
+import { PageHeader } from '../components/PageHeader';
 import type { Page } from '../types';
 
 interface HistoryPageProps {
@@ -15,25 +17,15 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
   const totalGames = entries.length;
 
   return (
-    <div className="min-h-dvh p-4">
+    <div className="px-4 lg:px-8 pb-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-accent">Historique</h1>
-            <p className="text-ink-muted text-sm mt-1">{totalGames} tournois enregistrés</p>
-          </div>
-          <div className="flex gap-3">
-            {entries.length > 0 && (
-              <Button variant="danger" size="sm" onClick={clearHistory}>
-                <Trash2 size={16} />
-              </Button>
-            )}
-            <Button variant="ghost" onClick={() => onNavigate('setup')}>
-              ← Setup
-            </Button>
-          </div>
-        </div>
+        <PageHeader
+          title="Historique"
+          subtitle={`${totalGames} tournoi${totalGames > 1 ? 's' : ''} enregistré${totalGames > 1 ? 's' : ''}`}
+          actions={entries.length > 0 && (
+            <ConfirmClear onConfirm={clearHistory} />
+          )}
+        />
 
         {entries.length === 0 ? (
           <Card className="text-center py-16">
@@ -41,7 +33,8 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
               <Trophy size={48} className="text-ink-faint" />
             </div>
             <p className="text-ink-faint font-display text-xl">Aucun tournoi terminé</p>
-            <p className="text-ink-faint text-sm mt-2">Les résultats apparaîtront ici</p>
+            <p className="text-ink-faint text-sm mt-2">Les résultats apparaîtront ici à la fin de chaque tournoi</p>
+            <Button className="mt-6" onClick={() => onNavigate('setup')}>Configurer un tournoi</Button>
           </Card>
         ) : (
           <div className="flex flex-col gap-4">
@@ -107,5 +100,27 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Vider l'historique demande une seconde confirmation : l'action est définitive. */
+function ConfirmClear({ onConfirm }: { onConfirm: () => void }) {
+  const [armed, setArmed] = useState(false);
+  if (!armed) {
+    return (
+      <button
+        onClick={() => setArmed(true)}
+        aria-label="Vider l'historique"
+        className="grid place-items-center w-11 h-11 rounded-full text-ink-muted hover:bg-danger/10 hover:text-danger"
+      >
+        <Trash2 size={20} />
+      </button>
+    );
+  }
+  return (
+    <span className="flex items-center gap-1">
+      <Button variant="danger" size="sm" onClick={() => { onConfirm(); setArmed(false); }}>Tout effacer</Button>
+      <Button variant="ghost" size="sm" onClick={() => setArmed(false)}>Annuler</Button>
+    </span>
   );
 }

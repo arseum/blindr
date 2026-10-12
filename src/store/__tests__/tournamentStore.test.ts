@@ -64,3 +64,24 @@ describe('éliminations', () => {
     expect(after[1].position).toBe(3);
   });
 });
+
+describe('re-entry', () => {
+  beforeEach(() => store().initTournament(config, ['A', 'B', 'C']));
+
+  it('remet le joueur en jeu, compte le re-entry et décale les positions', () => {
+    const [a, b] = t().players;
+    store().eliminatePlayer(a.id); // 3e
+    store().eliminatePlayer(b.id); // 2e
+    store().rebuyPlayer(a.id);
+    const [a2, b2] = t().players;
+    expect(a2.isEliminated).toBe(false);
+    expect(a2.reEntries).toBe(1);
+    expect(b2.position).toBe(3);
+    expect(t().rebuyCount).toBe(1);
+  });
+
+  it('ignore un joueur encore en jeu', () => {
+    store().rebuyPlayer(t().players[0].id);
+    expect(t().rebuyCount).toBe(0);
+  });
+});

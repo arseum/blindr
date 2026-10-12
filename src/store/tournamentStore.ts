@@ -123,13 +123,23 @@ export const useTournamentStore = create<TournamentStore>()(
 
       rebuyPlayer: (playerId) => set(state => {
         if (!state.tournament) return state;
+        const target = state.tournament.players.find(p => p.id === playerId);
+        if (!target || !target.isEliminated) return state;
+        const targetPosition = target.position ?? 0;
         return {
           tournament: {
             ...state.tournament,
             rebuyCount: state.tournament.rebuyCount + 1,
-            players: state.tournament.players.map(p =>
-              p.id === playerId ? { ...p, isEliminated: false, eliminatedAt: undefined, position: undefined } : p
-            ),
+            players: state.tournament.players.map(p => {
+              if (p.id === playerId) {
+                return { ...p, isEliminated: false, eliminatedAt: undefined, position: undefined, reEntries: (p.reEntries ?? 0) + 1 };
+              }
+              // comme pour une annulation : ceux sortis après lui reculent d'une place
+              if (p.isEliminated && p.position !== undefined && p.position < targetPosition) {
+                return { ...p, position: p.position + 1 };
+              }
+              return p;
+            }),
           }
         };
       }),

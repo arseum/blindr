@@ -3,6 +3,7 @@ import {ChevronRight, ClipboardList, Plus, Settings, Spade, Trash2, UserPlus, Us
 import {Card} from '../components/ui/Card';
 import {Button} from '../components/ui/Button';
 import {Input} from '../components/ui/Input';
+import {PageHeader} from '../components/PageHeader';
 import {PrizePoolSetupCard} from '../components/PrizePoolSetupCard';
 import {BlindStructureEditor} from '../components/BlindStructureEditor';
 import {useTournamentStore} from '../store/tournamentStore';
@@ -100,18 +101,12 @@ export function SetupPage({onNavigate}: SetupPageProps) {
     }
 
     return (
-        <div className="min-h-dvh p-4 md:p-8">
+        <div className="px-4 lg:px-8 pb-6">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="flex items-center justify-center gap-4 mb-2">
-                        <img src="/favicon.svg" alt="" className="w-12 h-12" />
-                        <h1 className="font-display text-5xl sm:text-6xl text-ink">
-                            blindr
-                        </h1>
-                    </div>
-                    <p className="text-ink-muted tracking-widest text-sm uppercase">Configuration du tournoi</p>
-                </div>
+                <PageHeader
+                    title={<span className="flex items-center gap-3"><img src="/favicon.svg" alt="" className="w-10 h-10 lg:hidden"/>blindr</span>}
+                    subtitle="Nouveau tournoi"
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>*]:min-w-0">
                     {/* Config card */}
@@ -381,16 +376,16 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                     </Card>
                 </div>
 
-                {/* Start button */}
-                <div className="mt-8 flex justify-center">
+                {/* Lancer : collé en bas de l'écran pour rester accessible pendant la saisie */}
+                <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] lg:bottom-4 mt-8 flex justify-center pointer-events-none">
                     <Button
                         variant="primary"
                         size="lg"
                         onClick={handleStart}
                         disabled={!canStart}
-                        className="flex items-center gap-3 text-xl px-12"
+                        className="pointer-events-auto w-full sm:w-auto sm:px-12 shadow-sheet"
                     >
-                        Lancer le tournoi <ChevronRight size={24}/>
+                        Lancer le tournoi <ChevronRight size={22}/>
                     </Button>
                 </div>
             </div>

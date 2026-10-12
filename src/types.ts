@@ -1,4 +1,4 @@
-export type Page = 'setup' | 'tournament' | 'tables' | 'history';
+export type Page = 'setup' | 'tournament' | 'players' | 'tables' | 'history';
 
 export interface Player {
   id: string;
@@ -7,6 +7,7 @@ export interface Player {
   isEliminated: boolean;
   eliminatedAt?: number; // level index
   position?: number; // finish position
+  reEntries?: number; // nombre de re-entry déjà pris
 }
 
 export interface Table {

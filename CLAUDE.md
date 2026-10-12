@@ -23,14 +23,20 @@ src/
   contexts/ColorSchemeContext.tsx — 'system' | 'light' | 'dark', clé localStorage 'blindr-scheme', pose data-scheme sur <html>
 
   components/
-    Navigation.tsx       — barre de nav + sélecteur d'apparence
+    Navigation.tsx       — 5 onglets ; barre en bas, rail à gauche en lg et en paysage téléphone (variante `short:`)
+    PageHeader.tsx       — en-tête commun + roue dentée → SettingsSheet (apparence, son, vibration, écran TV)
+    TournamentEvents.tsx — monté dans App : alertes de niveau (store.subscribe), Wake Lock, fin de tournoi
+    ChipTimer.tsx        — progression du niveau en 10 jetons
+    EmptyTournament.tsx  — état vide « Aucun tournoi en cours »
     ui/Button.tsx        — variants primary/secondary/danger/success/ghost
     ui/Card.tsx          — prop highlight= (liseré accent)
     ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
     BlindStructureEditor, PrizePoolSetupCard, EndTournamentOverlay, LevelTransitionOverlay
 
-  pages/  SetupPage, TournamentPage, TablesPage, HistoryPage, DisplayPage (?display, synchro via storage events)
-  store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1)
+  pages/  SetupPage (Config), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, synchro via storage events)
+  hooks/useWakeLock.ts — écran allumé pendant le jeu
+  utils/sound.ts       — sons Web Audio (débloqués au premier toucher dans main.tsx) + vibrate()
+  store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1), settingsStore.ts ('blindr-settings')
   utils/  prizePool.ts, tournamentEstimator.ts, chips.ts (levelChip)
   constants.ts — DEFAULT_BLIND_STRUCTURE, formatChips() (exact sous 100 000), formatTime()
 public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
@@ -38,7 +44,8 @@ public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 
 ### Design system (direction « Jeton »)
 - Classes sémantiques uniquement : `bg-canvas`, `bg-surface`, `bg-sunken`, `border-line`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-accent`, `text-on-accent`, `text-danger`, `text-success`, `bg-chip-<1|5|10|25|100|500|1000|5000>`
-- **Accent = couleur du jeton du niveau** : `<div data-chip={levelChip(level)}>` recolore tout le contenu. Par défaut : vert (chip-25).
+- **Accent = couleur du jeton du niveau** : App pose `data-chip={levelChip(level)}` sur la racine, toute l'app suit. Par défaut : vert (chip-25).
+- Variante `short:` = téléphone en paysage (hauteur ≤ 520 px). Cibles tactiles ≥ 44 px (`min-h-11`).
 - Chiffres : `num-display` (Archivo condensée, tabulaire) pour le timer et les gros nombres, `num` pour les chiffres en ligne. Titres : `font-display`.
 - Rayons : `rounded-control`, `rounded-card`, `rounded-sheet`. Ombres : `shadow-raised`, `shadow-sheet`.
 - **NE PAS** écrire de couleur hex/rgba dans les composants ; dans un `style`, utiliser `var(--color-…)`.
