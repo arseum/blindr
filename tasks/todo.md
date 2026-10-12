@@ -95,6 +95,12 @@ Décisions :
 - [x] Écran TV : toujours sombre, ChipTimer, couleur du niveau, tient en 720p et 1080p
 - [x] Tables : table ovale (maquette A), slider horizontal table par table ; tirage en cartes à retourner (maquette B)
 
+## Plus tard — quand Blindr deviendra une vraie app (native)
+Limites de la PWA sur iPhone, reportées à la version native :
+- [ ] Vibration (aucune API web sur iOS, même installée)
+- [ ] Sonnerie de fin de niveau plus forte, qui passe malgré le mode silencieux
+- [ ] Timer en notification / écran verrouillé (Live Activity), notifications de changement de niveau
+
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine
 - [ ] Vrai README
