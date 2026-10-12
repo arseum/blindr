@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from 'react';
-
-export type TransitionEffect = 'radial' | 'curtain' | 'ascend';
+import { useEffect, useState } from 'react';
+import type { TransitionEffect } from '../utils/transitionEffect';
 
 interface Props {
   effect: TransitionEffect;
@@ -13,12 +12,6 @@ const DURATIONS: Record<TransitionEffect, number> = {
   curtain: 2400,
   ascend:  2200,
 };
-
-const EFFECTS: TransitionEffect[] = ['radial', 'curtain', 'ascend'];
-
-export function pickRandomEffect(): TransitionEffect {
-  return EFFECTS[Math.floor(Math.random() * EFFECTS.length)];
-}
 
 function useDone(onDone: () => void, duration: number) {
   useEffect(() => {
@@ -143,7 +136,8 @@ function AscendEffect({ onDone, duration, label }: {
   useDone(onDone, duration);
   const d = `${duration}ms`;
 
-  const streaks = useMemo(() =>
+  // Tirées une seule fois, au montage
+  const [streaks] = useState(() =>
     Array.from({ length: 22 }, () => ({
       left:   `${2 + Math.random() * 96}%`,
       width:  `${1 + Math.random() * 3}px`,
@@ -153,7 +147,7 @@ function AscendEffect({ onDone, duration, label }: {
       color:  STREAK_COLORS[Math.floor(Math.random() * STREAK_COLORS.length)],
       blur:   Math.random() > 0.5 ? '2px' : '0px',
     }))
-  , []);
+  );
 
   return (
     <>

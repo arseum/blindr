@@ -1,13 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-export const COLOR_SCHEMES = ['system', 'light', 'dark'] as const;
-export type ColorScheme = typeof COLOR_SCHEMES[number];
-
-export const COLOR_SCHEME_LABELS: Record<ColorScheme, string> = {
-  system: 'Automatique',
-  light: 'Clair',
-  dark: 'Sombre',
-};
+import React, { useEffect, useState } from 'react';
+import { COLOR_SCHEMES, ColorSchemeContext, type ColorScheme } from './colorScheme';
 
 const STORAGE_KEY = 'blindr-scheme';
 
@@ -18,16 +10,6 @@ function readScheme(value: string | null): ColorScheme {
 function readStoredScheme(): ColorScheme {
   try { return readScheme(localStorage.getItem(STORAGE_KEY)); } catch { return 'system'; }
 }
-
-interface ColorSchemeContextValue {
-  scheme: ColorScheme;
-  setScheme: (s: ColorScheme) => void;
-}
-
-const ColorSchemeContext = createContext<ColorSchemeContextValue>({
-  scheme: 'system',
-  setScheme: () => {},
-});
 
 /** Applique data-scheme sur <html> ; « system » laisse prefers-color-scheme décider (voir tokens.css). */
 export function ColorSchemeProvider({ children }: { children: React.ReactNode }) {
@@ -58,8 +40,4 @@ export function ColorSchemeProvider({ children }: { children: React.ReactNode })
       {children}
     </ColorSchemeContext.Provider>
   );
-}
-
-export function useColorScheme() {
-  return useContext(ColorSchemeContext);
 }

@@ -9,8 +9,8 @@ import { bubbleState, bubbleBurst } from '../utils/bubble';
 import { feedback } from '../utils/feedback';
 import { BubbleBurst } from './BubbleBurst';
 import { TV_EFFECT_KEY } from '../constants';
-import { LevelTransitionOverlay, pickRandomEffect } from './LevelTransitionOverlay';
-import type { TransitionEffect } from './LevelTransitionOverlay';
+import { LevelTransitionOverlay } from './LevelTransitionOverlay';
+import { pickRandomEffect, type TransitionEffect } from '../utils/transitionEffect';
 import { EndTournamentOverlay } from './EndTournamentOverlay';
 import type { Page } from '../types';
 

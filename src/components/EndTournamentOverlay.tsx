@@ -35,8 +35,9 @@ export function EndTournamentOverlay({ tournament, onClose }: EndTournamentOverl
   const prizeAmount  = Math.round(totalPot * tournament.config.prizePool.prizePoolPct / 100);
   const prizes       = calculatePrizes(prizeAmount, tournament.players.length, tournament.config.prizePool);
   const getPrize     = (position: number) => prizes.find(p => p.position === position)?.amount ?? 0;
+  const [shownAt]    = useState(() => Date.now());
   const durationMin  = tournament.startedAt
-    ? Math.round((Date.now() - tournament.startedAt) / 60000)
+    ? Math.round((shownAt - tournament.startedAt) / 60000)
     : 0;
 
   useEffect(() => {

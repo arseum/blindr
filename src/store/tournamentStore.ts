@@ -56,7 +56,7 @@ function createTables(players: Player[], maxPerTable: number): Table[] {
 
 export const useTournamentStore = create<TournamentStore>()(
   persist(
-    (set, _get) => ({
+    (set) => ({
       tournament: null,
 
       initTournament: (config, playerNames) => {

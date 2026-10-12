@@ -15,7 +15,7 @@ function syncToLocalStorage() {
   const tournament = useTournamentStore.getState().tournament;
   try {
     localStorage.setItem(TV_SYNC_KEY, JSON.stringify(tournament));
-  } catch {}
+  } catch { /* stockage plein ou indisponible : l'écran TV ne sera pas synchronisé */ }
 }
 
 function tick() {

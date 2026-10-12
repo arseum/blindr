@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TV_SYNC_KEY } from '../timer';
 import { formatTime, formatChips, TV_EFFECT_KEY } from '../constants';
 import { calculatePrizes, getPaidPlaces, positionLabel } from '../utils/prizePool';
@@ -6,7 +6,7 @@ import { levelChip } from '../utils/chips';
 import { bubbleState } from '../utils/bubble';
 import { Odometer } from '../components/ui/Odometer';
 import { LevelTransitionOverlay } from '../components/LevelTransitionOverlay';
-import type { TransitionEffect } from '../components/LevelTransitionOverlay';
+import type { TransitionEffect } from '../utils/transitionEffect';
 import type { TournamentState, Player } from '../types';
 
 function readInitialState(): TournamentState | null {
@@ -240,9 +240,9 @@ function EndScreenTV({ tournament }: { tournament: TournamentState }) {
   const prizeAmount = Math.round(totalPot * tournament.config.prizePool.prizePoolPct / 100);
   const prizes      = calculatePrizes(prizeAmount, tournament.players.length, tournament.config.prizePool);
   const getPrize    = (position: number) => prizes.find(p => p.position === position)?.amount ?? 0;
-  const nowRef = useRef(Date.now());
+  const [shownAt] = useState(() => Date.now());
   const durationMin = tournament.startedAt
-    ? Math.round((nowRef.current - tournament.startedAt) / 60000)
+    ? Math.round((shownAt - tournament.startedAt) / 60000)
     : 0;
 
   useEffect(() => {

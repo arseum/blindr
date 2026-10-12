@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { X, Monitor, Sun, Moon, Tv } from 'lucide-react';
-import { useColorScheme, COLOR_SCHEMES, COLOR_SCHEME_LABELS } from '../contexts/ColorSchemeContext';
+import { useColorScheme, COLOR_SCHEMES, COLOR_SCHEME_LABELS } from '../contexts/colorScheme';
 import { useSettingsStore } from '../store/settingsStore';
 import { playLevelChange, unlockAudio, vibrate } from '../utils/sound';
 import { Switch } from './ui/Switch';
