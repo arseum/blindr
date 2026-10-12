@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { bubbleState, bubbleBurst } from '../bubble';
-import { PRESETS, nearestValue, depthLabel, BIG_BLIND_VALUES } from '../presets';
-import { generateBlindStructure } from '../tournamentEstimator';
+import { PRESETS, nearestValue, depthLabel } from '../presets';
+import { bigBlindOptions, generateBlindStructure } from '../blinds';
+import { estimateTournament } from '../tournamentEstimator';
 
 describe('bulle', () => {
   it('détecte avant, pendant et après la bulle', () => {
@@ -22,22 +23,21 @@ describe('bulle', () => {
 
 describe('formules', () => {
   it.each(PRESETS)('$name : structure cohérente avec la grosse blinde choisie', p => {
-    const bb = nearestValue(BIG_BLIND_VALUES, 10000 / p.depthBB);
-    const structure = generateBlindStructure(10000, 25, p.targetMinutes, p.levelMinutes, bb);
+    const bb = nearestValue(bigBlindOptions(25, 10000), 10000 / p.depthBB);
+    const structure = generateBlindStructure({ startingStack: 10000, smallestChip: 25, startBigBlind: bb, targetMinutes: p.targetMinutes, levelMinutes: p.levelMinutes });
     const first = structure[0];
     expect(first.bigBlind).toBe(bb);
     expect(structure.filter(l => !l.isBreak).every(l => l.duration === Math.max(5, p.levelMinutes))).toBe(true);
   });
-  it.each(PRESETS)('$name : durée totale proche de la cible', p => {
-    const structure = generateBlindStructure(10000, 25, p.targetMinutes, p.levelMinutes, 100);
-    const total = structure.reduce((s, l) => s + l.duration, 0);
-    expect(Math.abs(total - p.targetMinutes)).toBeLessThanOrEqual(p.levelMinutes);
-  });
-  it('arrondit la grosse blinde au plus petit jeton', () => {
-    expect(generateBlindStructure(10000, 25, 180, 20, 40)[0].bigBlind).toBe(50);
+  it.each(PRESETS)('$name : fin estimée proche de la cible, avec des niveaux de réserve', p => {
+    const bb = nearestValue(bigBlindOptions(25, 10000), 10000 / p.depthBB);
+    const structure = generateBlindStructure({ startingStack: 10000, smallestChip: 25, startBigBlind: bb, targetMinutes: p.targetMinutes, levelMinutes: p.levelMinutes });
+    const estimate = estimateTournament(structure, 9, 10000, 9, null);
+    expect(Math.abs(estimate.estimatedDurationMinutes - p.targetMinutes)).toBeLessThanOrEqual(p.targetMinutes * 0.15);
+    expect(structure.length - 1 - estimate.estimatedEndLevel).toBeGreaterThanOrEqual(2);
   });
   it('choisit la valeur la plus proche', () => {
-    expect(nearestValue(BIG_BLIND_VALUES, 133)).toBe(150);
+    expect(nearestValue([100, 150, 200], 133)).toBe(150);
   });
   it('décrit la profondeur', () => {
     expect(depthLabel(100)).toMatch(/Confortable/);

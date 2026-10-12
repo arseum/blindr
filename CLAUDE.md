@@ -20,7 +20,8 @@ src/
   styles/tokens.css     — DESIGN TOKENS (couleurs clair/sombre, jetons, rayons, ombres, num-display)
   timer.ts / timerWorker.ts — timer singleton hors React ; rattrape le temps écoulé via lastTickAt
 
-  contexts/ColorSchemeContext.tsx — 'system' | 'light' | 'dark', clé localStorage 'blindr-scheme', pose data-scheme sur <html>
+  contexts/ColorSchemeContext.tsx — Provider : 'system' | 'light' | 'dark', clé localStorage 'blindr-scheme', pose data-scheme sur <html>
+  contexts/colorScheme.ts — constantes, contexte et hook useColorScheme (séparés pour le fast refresh)
 
   components/
     Navigation.tsx       — 5 onglets ; barre en bas, rail à gauche en lg et en paysage téléphone (variante `short:`)
@@ -32,7 +33,7 @@ src/
     BubbleBurst.tsx      — célébration quand la bulle éclate
     BlindCurve.tsx       — montée des blindes en barres
     ui/ChipWheel.tsx     — roulette de jetons (doigt, souris, molette, flèches)
-    ui/Odometer.tsx, ui/HoldButton.tsx (maintenir pour confirmer), ui/SwipeRow.tsx (glisser pour agir), ui/UndoToast.tsx
+    ui/Odometer.tsx, ui/Stepper.tsx (− valeur +), ui/HoldButton.tsx (maintenir pour confirmer), ui/SwipeRow.tsx (glisser pour agir), ui/UndoToast.tsx
     ui/Button.tsx        — variants primary/secondary/danger/success/ghost
     ui/Card.tsx          — prop highlight= (liseré accent)
     ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
@@ -43,10 +44,11 @@ src/
   utils/sound.ts       — sons Web Audio (débloqués au premier toucher dans main.tsx) + vibrate()
   utils/feedback.ts    — feedback('tick' | 'select' | 'eliminate' | …) : son + vibration selon les Réglages. Tout geste passe par là.
   utils/presets.ts     — formules + valeurs des roulettes ; utils/bubble.ts — état de la bulle
+  utils/blinds.ts      — calcul des niveaux (échelle de blindes, jetons retirés en cours de partie, SB = BB/2 ou 2/3) + valeurs jouables des roulettes tapis / grosse blinde
   hooks/useTapSwipe.ts — toucher vs glisser horizontal sur une même surface
   store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1), settingsStore.ts ('blindr-settings')
   utils/  prizePool.ts, tournamentEstimator.ts, chips.ts (levelChip)
-  constants.ts — DEFAULT_BLIND_STRUCTURE, formatChips() (exact sous 100 000), formatTime()
+  constants.ts — formatChips() (exact sous 100 000), formatTime()
 public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 ```
 
@@ -67,7 +69,7 @@ public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 
 ### Conventions
 - Pages reçoivent `onNavigate: (page: Page) => void`
-- Vérifier avec `npm test`, `npm run build`, puis `npm run dev`
+- Vérifier avec `npm test`, `npx eslint src` (0 erreur), `npm run build`, puis `npm run dev`
 
 ---
 

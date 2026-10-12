@@ -75,6 +75,18 @@ Décisions :
 - [x] Vérification : build, fichiers servis, test hors ligne (Chrome piloté par CDP)
 - [ ] Test réel par l'utilisateur : installation iPhone + Android, son, vibration, écran allumé
 
+## Cohérence de la création de tournoi
+- [x] Ordre des réglages : plus petit jeton → tapis → grosse blinde (les roulettes ne proposent que des valeurs jouables avec ce jeton)
+- [x] Nouveau calcul des niveaux (`utils/blinds.ts`) : échelle de blindes « de vrai poker », progression calée sur la durée et le nombre de joueurs, petits jetons retirés au fil du tournoi (SB = BB/2, sinon 2/3 de la BB quand les jetons l'imposent : 1 000-1 500 et non 750-1 500)
+- [x] Structure dérivée des réglages (plus d'état dupliqué), « sur mesure » seulement après retouche
+- [x] Tests (`utils/__tests__/blinds.test.ts`)
+- [x] Niveaux de réserve après la fin estimée ; « Durée » = fin estimée (le chrono s'arrêtait au dernier niveau alors qu'il restait des joueurs)
+- [x] Estimateur fiabilisé : joueurs comptés en continu (plus de blocage à 2), re-entrants réintégrés, mains plus rapides à table incomplète, fin interpolée
+- [x] Calcul calé sur l'estimateur (re-entry compris) : on garde la vitesse de montée dont la fin estimée tombe sur la durée visée
+- [x] Éditeur : niveaux dépliables, blindes par pas jouables, jeton d'ante à toucher (fini la case à cocher), `ui/Stepper.tsx`
+- [x] Suppression de `DEFAULT_BLIND_STRUCTURE` (inutilisé)
+- [x] ESLint à zéro : tirages aléatoires et `Date.now` hors du rendu (`useState` paresseux), `utils/transitionEffect.ts`, `contexts/colorScheme.ts` (constantes + hook), `_get`, `catch {}` commenté
+
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine
 - [ ] Vrai README
@@ -85,8 +97,6 @@ Décisions :
 - Vitest + `npm test` : 28 tests (prizePool, estimateur, store/timer).
 - Bug corrigé : le temps écoulé app fermée (fréquent en PWA iOS) était perdu → `lastTickAt` persisté dans `TournamentState`, repris par `initTimerLoop`.
 - Stores persistés versionnés (v1) avec migration v0 → v1.
-- Bug trouvé à l'audit : l'historique enregistre `prize: 0` pour chaque place (TournamentPage `handleCloseEnd`) — à corriger.
-- Restent 2 erreurs ESLint préexistantes (`_get` inutilisé, `catch {}` vide) — à traiter lors du nettoyage.
 
 ### Phase 2 — terminée
 - Thème Clash Royale supprimé : assets `public/`, CSS supercell (~450 lignes), images d'arène de l'écran TV.
@@ -117,3 +127,9 @@ Décisions :
 - `useInstallPrompt` + `InstallCard` : bouton natif (Chrome/Android), mode d'emploi iPhone ; dans Réglages et sur Config (masquable).
 - Vérifié hors ligne : SW actif, réseau coupé → app, police et écran TV se chargent.
 - Fix : bouton « Lancer le tournoi » désactivé était translucide par-dessus le formulaire ; il dit maintenant ce qui manque.
+
+### Cohérence de la création — terminée
+- `utils/blinds.ts` remplace `generateBlindStructure` de `tournamentEstimator.ts` (qui ne garde que validation + estimation).
+- Limite connue : avec beaucoup de joueurs en Turbo/Apéro, la cible est inatteignable (montée plafonnée à ×2 par niveau) ; la fin estimée affichée le dit honnêtement.
+- Exemple (1re version) Soirée, 10 joueurs, 10 000 / jeton 25 : 50/100 · 75/150 · 125/250 · 250/500 · 400/800 · 600/1200 · 1000/2000 (200) · 1500/3000 (300).
+- La structure dépend du nombre de joueurs inscrits (9 par défaut tant que la liste est vide), sauf si elle est « sur mesure ».

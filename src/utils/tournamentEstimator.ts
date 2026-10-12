@@ -1,67 +1,5 @@
 import type { BlindLevel, ReEntryConfig } from '../types';
 
-/**
- * Génère une structure de blindes automatique.
- * - BB de départ ≈ 1% du stack, arrondi au plus petit jeton
- * - Progression x1.5 par niveau, arrondie au plus petit jeton
- * - Pauses (5 à 15 min selon la durée des niveaux) après chaque tranche de 4 niveaux de jeu
- * - Antes à partir du niveau 7 (≈ 10% de la BB)
- *
- * @param levelDurationMinutes  Durée souhaitée par niveau (défaut 20 min)
- * @param startBigBlind         Grosse blinde du niveau 1 (défaut : 1 % du tapis, soit 100 BB)
- */
-export function generateBlindStructure(
-  startingStack: number,
-  smallestChip: number,
-  targetDurationMinutes = 180,
-  levelDurationMinutes = 20,
-  startBigBlind?: number
-): BlindLevel[] {
-  const chip = Math.max(1, smallestChip);
-  const roundTo = (n: number) => Math.max(chip, Math.round(n / chip) * chip);
-  const lvDur = Math.max(5, Math.round(levelDurationMinutes));
-
-  // Pauses proportionnées aux niveaux (5 à 15 min), une après chaque tranche de 4 niveaux de jeu
-  const breakDur = Math.min(15, Math.max(5, lvDur));
-  const totalFor = (levels: number) => levels * lvDur + Math.floor((levels - 1) / 4) * breakDur;
-  // Plus grand nombre de niveaux qui tient dans la durée visée (à un demi-niveau près)
-  let GAME_LEVELS = Math.max(4, Math.round(targetDurationMinutes / lvDur));
-  while (GAME_LEVELS > 4 && totalFor(GAME_LEVELS) > targetDurationMinutes + lvDur / 2) GAME_LEVELS--;
-  GAME_LEVELS = Math.min(24, GAME_LEVELS);
-
-  const startBB = roundTo(startBigBlind ?? startingStack * 0.01);
-  const result: BlindLevel[] = [];
-  let gameLevel = 0;
-
-  for (let i = 0; i < GAME_LEVELS; i++) {
-    const bb = roundTo(startBB * Math.pow(1.5, i));
-    const sb = roundTo(bb / 2);
-    const ante = i >= 6 ? roundTo(bb * 0.1) : 0;
-
-    result.push({
-      level: result.length + 1,
-      smallBlind: sb,
-      bigBlind: bb,
-      ante,
-      duration: lvDur,
-    });
-    gameLevel++;
-
-    if (gameLevel % 4 === 0 && gameLevel < GAME_LEVELS) {
-      result.push({
-        level: result.length + 1,
-        smallBlind: 0,
-        bigBlind: 0,
-        ante: 0,
-        duration: breakDur,
-        isBreak: true,
-      });
-    }
-  }
-
-  return result;
-}
-
 export interface BlindValidationError {
   levelIndex: number;
   field: 'smallBlind' | 'bigBlind' | 'ante';
@@ -103,11 +41,19 @@ export function validateBlindStructure(
   return errors;
 }
 
+/** Part des joueurs éliminés qui rachètent quand le re-entry est encore ouvert. */
+const REENTRY_RATE = 0.6;
+/** Le tournoi est fini quand il reste moins de 1,5 joueur (compté en continu). */
+const END_PLAYERS = 1.5;
+
 /**
  * Estime la durée et le nombre de joueurs restants par niveau.
- * Modèle basé sur le M-ratio (Paul Magriel) avec décroissance exponentielle.
+ * Modèle basé sur le M-ratio (Paul Magriel) avec décroissance exponentielle :
  *
- * survivalRate(L) = e^(-mains_niveau / (avgM × joueurs_à_table))
+ *   joueurs(t) = joueurs₀ × e^(-mains(t) / (avgM × joueurs_à_table))
+ *
+ * Le nombre de joueurs est suivi en continu (pas d'arrondi qui bloquerait la fin à 2 joueurs),
+ * les mains vont plus vite quand la table est incomplète, et la fin est interpolée dans le niveau.
  */
 export function estimateTournament(
   structure: BlindLevel[],
@@ -128,66 +74,54 @@ export function estimateTournament(
     };
   }
 
-  // Suivi re-entry par "slot joueur" (approximation : on alloue les re-entries aux premiers slots)
-  const reEntriesUsed = new Array(playerCount).fill(0);
-
+  let reEntriesLeft = reEntry ? (reEntry.maxPerPlayer === 0 ? Infinity : playerCount * reEntry.maxPerPlayer) : 0;
   let totalChips = playerCount * startingStack;
-  let playersRemaining = playerCount;
+  let players = playerCount;
   const levels: LevelEstimate[] = [];
 
   let estimatedEndLevel = structure.length - 1;
   let estimatedDurationMinutes = totalDurationMinutes;
-  let cumulativeDuration = 0;
+  let elapsed = 0;
   let endFound = false;
 
   for (let i = 0; i < structure.length; i++) {
     const level = structure[i];
-    cumulativeDuration += level.duration;
-
-    if (level.isBreak) {
-      levels.push({ levelIndex: i, isBreak: true, playersRemaining, avgM: 0 });
-      continue;
-    }
-
     const roundCost = level.smallBlind + level.bigBlind + level.ante;
-    if (roundCost === 0) {
-      levels.push({ levelIndex: i, isBreak: false, playersRemaining, avgM: 999 });
+
+    if (level.isBreak || roundCost === 0 || endFound) {
+      levels.push({ levelIndex: i, isBreak: !!level.isBreak, playersRemaining: Math.round(players), avgM: level.isBreak ? 0 : 999 });
+      elapsed += level.duration;
       continue;
     }
 
-    const avgStack = totalChips / playersRemaining;
-    const avgM = avgStack / roundCost;
-    const playersAtTable = Math.min(maxPlayersPerTable, playersRemaining);
-    const handsInLevel = (level.duration * handsPerHour) / 60;
+    const avgM = totalChips / players / roundCost;
+    const atTable = Math.max(2, Math.min(maxPlayersPerTable, players));
+    // Table incomplète : on distribue plus vite (jusqu'à ×2 en tête-à-tête)
+    const handsPerMinute = (handsPerHour / 60) * Math.min(2, maxPlayersPerTable / atTable);
+    // Taux d'élimination par minute
+    const rate = handsPerMinute / (avgM * atTable);
 
-    // Survie : e^(-mains / (M * joueurs_à_table))
-    const survivalRate = Math.exp(-handsInLevel / (avgM * playersAtTable));
-    const newPlayers = Math.max(1, Math.round(playersRemaining * survivalRate));
-    const eliminated = playersRemaining - newPlayers;
-
-    // Re-entry : ajouter des chips pour les éliminés qui peuvent revenir
-    // Niveau 1-indexed pour comparaison avec maxLevel
-    if (reEntry && (i + 1) <= reEntry.maxLevel && eliminated > 0) {
-      let reEnterers = 0;
-      for (let p = 0; p < eliminated && p < playerCount; p++) {
-        const maxRe = reEntry.maxPerPlayer === 0 ? Infinity : reEntry.maxPerPlayer;
-        if (reEntriesUsed[p] < maxRe) {
-          reEntriesUsed[p]++;
-          reEnterers++;
-        }
-      }
-      totalChips += reEnterers * startingStack;
-    }
-
-    levels.push({ levelIndex: i, isBreak: false, playersRemaining: newPlayers, avgM });
-
-    if (!endFound && playersRemaining > 1 && newPlayers <= 1) {
+    const after = players * Math.exp(-rate * level.duration);
+    if (after < END_PLAYERS) {
+      // Fin dans ce niveau : moment où l'on passe sous 1,5 joueur
       estimatedEndLevel = i;
-      estimatedDurationMinutes = cumulativeDuration;
+      estimatedDurationMinutes = Math.round(elapsed + Math.log(players / END_PLAYERS) / rate);
       endFound = true;
+      players = 1;
+    } else {
+      // Re-entry : une partie des éliminés rachète un tapis et revient en jeu
+      if (reEntry && i + 1 <= reEntry.maxLevel) {
+        const back = Math.min(reEntriesLeft, (players - after) * REENTRY_RATE);
+        reEntriesLeft -= back;
+        totalChips += back * startingStack;
+        players = after + back;
+      } else {
+        players = after;
+      }
     }
 
-    playersRemaining = newPlayers;
+    levels.push({ levelIndex: i, isBreak: false, playersRemaining: Math.max(1, Math.round(players)), avgM });
+    elapsed += level.duration;
   }
 
   return {

@@ -1,25 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generateBlindStructure, validateBlindStructure, estimateTournament } from '../tournamentEstimator';
-
-describe('generateBlindStructure', () => {
-  const structure = generateBlindStructure(10000, 25, 180, 20);
-  const game = structure.filter(l => !l.isBreak);
-
-  it('produit des blindes multiples du plus petit jeton', () => {
-    expect(validateBlindStructure(structure, 25)).toEqual([]);
-  });
-  it('fait croître la big blind', () => {
-    for (let i = 1; i < game.length; i++) {
-      expect(game[i].bigBlind).toBeGreaterThanOrEqual(game[i - 1].bigBlind);
-    }
-  });
-  it('insère une pause tous les 4 niveaux de jeu', () => {
-    expect(structure[4].isBreak).toBe(true);
-  });
-  it('numérote les niveaux de façon continue', () => {
-    structure.forEach((l, i) => expect(l.level).toBe(i + 1));
-  });
-});
+import { validateBlindStructure, estimateTournament } from '../tournamentEstimator';
+import { generateBlindStructure } from '../blinds';
 
 describe('validateBlindStructure', () => {
   it('signale les valeurs non multiples', () => {
@@ -32,7 +13,7 @@ describe('validateBlindStructure', () => {
 });
 
 describe('estimateTournament', () => {
-  const structure = generateBlindStructure(10000, 25, 240, 20);
+  const structure = generateBlindStructure({ startingStack: 10000, smallestChip: 25, targetMinutes: 240, levelMinutes: 20 });
 
   it('fait décroître le nombre de joueurs', () => {
     const { levels } = estimateTournament(structure, 30, 10000, 9, null);

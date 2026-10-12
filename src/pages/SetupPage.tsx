@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, Minus, Plus, Spade, Trash2, UserPlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, Plus, Spade, Trash2, UserPlus } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { ChipWheel } from '../components/ui/ChipWheel';
 import { Odometer } from '../components/ui/Odometer';
 import { Switch } from '../components/ui/Switch';
+import { Stepper as UiStepper } from '../components/ui/Stepper';
 import { PageHeader } from '../components/PageHeader';
 import { InstallCard } from '../components/InstallCard';
 import { BlindCurve } from '../components/BlindCurve';
@@ -14,10 +15,11 @@ import { PrizePoolSetupCard } from '../components/PrizePoolSetupCard';
 import { BlindStructureEditor } from '../components/BlindStructureEditor';
 import { useTournamentStore } from '../store/tournamentStore';
 import { DEFAULT_PRIZE_POOL_CONFIG } from '../constants';
-import { generateBlindStructure } from '../utils/tournamentEstimator';
+import { DEFAULT_FIELD, bigBlindOptions, generateBlindStructure, stackOptions } from '../utils/blinds';
+import { estimateTournament } from '../utils/tournamentEstimator';
 import { feedback } from '../utils/feedback';
 import {
-  PRESETS, STACK_VALUES, BIG_BLIND_VALUES, BUY_IN_VALUES, SMALLEST_CHIP_VALUES,
+  PRESETS, STACK_VALUES, BUY_IN_VALUES, SMALLEST_CHIP_VALUES,
   depthLabel, nearestValue, type TournamentPreset,
 } from '../utils/presets';
 import { chipColorVar } from '../utils/chips';
@@ -32,10 +34,6 @@ interface SetupPageProps {
 
 const DEFAULT_PRESET = PRESETS.find(p => p.id === 'soiree')!;
 
-function structureFor(preset: TournamentPreset, stack: number, smallestChip: number, startBB: number) {
-  return generateBlindStructure(stack, smallestChip, preset.targetMinutes, preset.levelMinutes, startBB);
-}
-
 function formatMinutes(total: number) {
   if (total < 60) return `${total} min`;
   const h = Math.floor(total / 60), m = total % 60;
@@ -45,20 +43,19 @@ function formatMinutes(total: number) {
 export function SetupPage({ onNavigate }: SetupPageProps) {
   const { initTournament, tournament } = useTournamentStore();
 
-  // Formule de base ; `custom` = structure retouchée à la main (« sur mesure »)
+  // Formule de base ; `customStructure` = structure retouchée à la main (« sur mesure »)
   const [preset, setPreset] = useState<TournamentPreset>(DEFAULT_PRESET);
-  const [custom, setCustom] = useState(false);
+  const [customStructure, setCustomStructure] = useState<BlindLevel[] | null>(null);
   const [startBB, setStartBB] = useState(100);
-  const [config, setConfig] = useState<TournamentConfig>(() => ({
+  const [config, setConfig] = useState<Omit<TournamentConfig, 'blindStructure'>>({
     name: 'Tournoi du vendredi',
     buyIn: 20,
     startingStack: 10000,
     maxPlayersPerTable: 9,
-    blindStructure: structureFor(DEFAULT_PRESET, 10000, 25, 100),
     prizePool: DEFAULT_PRIZE_POOL_CONFIG,
     smallestChip: 25,
     reEntry: null,
-  }));
+  });
 
   const [playerNames, setPlayerNames] = useState<string[]>(['', '']);
   const [bulkCount, setBulkCount] = useState(8);
@@ -73,27 +70,30 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
     try { localStorage.setItem(INSTALL_DISMISSED_KEY, '1'); } catch { /* stockage indisponible */ }
   };
 
-  /** Recalcule la structure depuis la formule quand un réglage de base change (annule le « sur mesure »). */
-  const rebuild = (next: { preset?: TournamentPreset; stack?: number; bb?: number; smallestChip?: number }) => {
-    const p = next.preset ?? preset;
-    setCustom(false);
-    const stack = next.stack ?? config.startingStack;
-    const bb = next.bb ?? startBB;
-    const chip = next.smallestChip ?? config.smallestChip;
-    setConfig(c => ({ ...c, startingStack: stack, smallestChip: chip, blindStructure: structureFor(p, stack, chip, bb) }));
+  // Les réglages s'enchaînent : plus petit jeton → tapis → grosse blinde.
+  // Chaque roulette ne propose que des valeurs jouables avec les réglages au-dessus.
+  const stacks = useMemo(() => stackOptions(STACK_VALUES, config.smallestChip), [config.smallestChip]);
+  const bigBlinds = useMemo(
+    () => bigBlindOptions(config.smallestChip, config.startingStack),
+    [config.smallestChip, config.startingStack],
+  );
+  const depth = Math.round(config.startingStack / startBB);
+
+  /** Change le jeton ou le tapis en gardant la profondeur (en BB) ; annule le « sur mesure ». */
+  const setChips = (smallestChip: number, stack: number) => {
+    const startingStack = stackOptions(STACK_VALUES, smallestChip).includes(stack)
+      ? stack
+      : nearestValue(stackOptions(STACK_VALUES, smallestChip), stack);
+    setConfig(c => ({ ...c, smallestChip, startingStack }));
+    setStartBB(nearestValue(bigBlindOptions(smallestChip, startingStack), startingStack / depth));
+    setCustomStructure(null);
   };
 
   const choosePreset = (p: TournamentPreset) => {
-    const bb = nearestValue(BIG_BLIND_VALUES, config.startingStack / p.depthBB);
     setPreset(p);
-    setStartBB(bb);
-    rebuild({ preset: p, bb });
+    setStartBB(nearestValue(bigBlinds, config.startingStack / p.depthBB));
+    setCustomStructure(null);
     feedback('select');
-  };
-
-  const editStructure = (structure: BlindLevel[]) => {
-    setCustom(true);
-    setConfig(c => ({ ...c, blindStructure: structure }));
   };
 
   // ── Joueurs ──
@@ -113,19 +113,46 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
   };
 
   const validPlayers = playerNames.filter(n => n.trim().length > 0);
+
+  // Structure calculée depuis les réglages (le nombre de joueurs règle la vitesse de montée)
+  const blindStructure = useMemo(
+    () => customStructure ?? generateBlindStructure({
+      startingStack: config.startingStack,
+      smallestChip: config.smallestChip,
+      startBigBlind: startBB,
+      targetMinutes: preset.targetMinutes,
+      levelMinutes: preset.levelMinutes,
+      playerCount: validPlayers.length,
+      maxPlayersPerTable: config.maxPlayersPerTable,
+      reEntry: config.reEntry,
+    }),
+    [customStructure, config.startingStack, config.smallestChip, config.maxPlayersPerTable, config.reEntry, startBB, preset, validPlayers.length],
+  );
+  // Fin estimée (9 joueurs supposés tant que la liste est vide)
+  const estimate = useMemo(
+    () => estimateTournament(
+      blindStructure,
+      validPlayers.length >= 2 ? validPlayers.length : DEFAULT_FIELD,
+      config.startingStack,
+      config.maxPlayersPerTable,
+      config.reEntry,
+    ),
+    [blindStructure, validPlayers.length, config.startingStack, config.maxPlayersPerTable, config.reEntry],
+  );
   const canStart = validPlayers.length >= 2 && config.name.trim().length > 0;
   const startHint = config.name.trim().length === 0 ? 'Donne un nom au tournoi' : 'Ajoute au moins 2 joueurs';
 
   const handleStart = () => {
     if (!canStart) return;
-    initTournament(config, validPlayers.map(n => n.trim()));
+    initTournament({ ...config, blindStructure }, validPlayers.map(n => n.trim()));
     setDrawing(true);
   };
 
   // ── Résumé de la structure ──
-  const gameLevels = config.blindStructure.filter(l => !l.isBreak);
-  const totalMinutes = config.blindStructure.reduce((s, l) => s + l.duration, 0);
-  const depth = Math.round(config.startingStack / Math.max(1, gameLevels[0]?.bigBlind ?? startBB));
+  const gameLevels = blindStructure.filter(l => !l.isBreak);
+  const levelsToEnd = blindStructure.slice(0, estimate.estimatedEndLevel + 1).filter(l => !l.isBreak).length;
+  const custom = customStructure !== null;
+  const firstLevel = gameLevels[0];
 
   if (drawing && tournament) {
     return <SeatDraw tournament={tournament} onDone={() => { setDrawing(false); onNavigate('tournament'); }} />;
@@ -189,13 +216,13 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
             ))}
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <Stat label="Niveaux"><Odometer value={String(gameLevels.length)} /></Stat>
+            <Stat label="Niveaux joués"><Odometer value={String(levelsToEnd)} /></Stat>
             <Stat label="Par niveau">{gameLevels[0]?.duration ?? 0} min</Stat>
-            <Stat label="Durée">{formatMinutes(totalMinutes)}</Stat>
+            <Stat label="Fin estimée">{formatMinutes(Math.round(estimate.estimatedDurationMinutes / 5) * 5)}</Stat>
           </div>
           <div>
-            <p className="text-sm text-ink-muted mb-1.5">Montée des blindes</p>
-            <BlindCurve structure={config.blindStructure} />
+            <p className="text-sm text-ink-muted mb-1.5">Montée des blindes <span className="text-ink-faint">· en clair, les niveaux de réserve</span></p>
+            <BlindCurve structure={blindStructure} reserveFrom={estimate.estimatedEndLevel + 1} />
           </div>
         </Section>
 
@@ -240,26 +267,44 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
           </div>
         </Section>
 
-        {/* ── Jetons ── */}
+        {/* ── Jetons : du plus petit jeton à la grosse blinde, chaque choix borne le suivant ── */}
         <Section title="Jetons">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-ink-muted">Plus petit jeton sur la table</p>
+            <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Plus petit jeton">
+              {SMALLEST_CHIP_VALUES.map(v => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={config.smallestChip === v}
+                  onClick={() => { setChips(v, config.startingStack); feedback('select'); }}
+                  className={`chip-coin w-12 text-sm transition-transform ${config.smallestChip === v ? 'scale-110 ring-2 ring-offset-2 ring-offset-canvas ring-ink' : 'opacity-70'}`}
+                  style={{ '--c': chipColorVar(v) } as React.CSSProperties}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm text-ink-muted">Tapis de départ</p>
             <p className="num-display text-6xl"><Odometer value={fmt.format(config.startingStack)} /></p>
             <ChipWheel
               label="Tapis de départ"
-              values={STACK_VALUES}
+              values={stacks}
               value={config.startingStack}
-              onChange={stack => rebuild({ stack })}
+              onChange={stack => setChips(config.smallestChip, stack)}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <p className="text-sm text-ink-muted">Grosse blinde de départ</p>
-            <p className="num-display text-6xl"><Odometer value={fmt.format(gameLevels[0]?.bigBlind ?? startBB)} /></p>
+            <p className="text-sm text-ink-muted">Blindes de départ</p>
+            <p className="num-display text-6xl"><Odometer value={`${fmt.format(firstLevel?.smallBlind ?? startBB / 2)} / ${fmt.format(firstLevel?.bigBlind ?? startBB)}`} /></p>
             <ChipWheel
               label="Grosse blinde de départ"
-              values={BIG_BLIND_VALUES}
+              values={bigBlinds}
               value={startBB}
-              onChange={bb => { setStartBB(bb); rebuild({ bb }); }}
+              onChange={bb => { setStartBB(bb); setCustomStructure(null); }}
             />
           </div>
           <div className="flex flex-col gap-1.5 p-3.5 rounded-card bg-sunken">
@@ -282,24 +327,6 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
               format={v => `${v}€`}
               onChange={buyIn => setConfig(c => ({ ...c, buyIn }))}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm text-ink-muted">Plus petit jeton sur la table</p>
-            <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Plus petit jeton">
-              {SMALLEST_CHIP_VALUES.map(v => (
-                <button
-                  key={v}
-                  type="button"
-                  role="radio"
-                  aria-checked={config.smallestChip === v}
-                  onClick={() => { rebuild({ smallestChip: v }); feedback('select'); }}
-                  className={`chip-coin w-12 text-sm transition-transform ${config.smallestChip === v ? 'scale-110 ring-2 ring-offset-2 ring-offset-canvas ring-ink' : 'opacity-70'}`}
-                  style={{ '--c': chipColorVar(v) } as React.CSSProperties}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
           </div>
         </Section>
 
@@ -352,8 +379,8 @@ export function SetupPage({ onNavigate }: SetupPageProps) {
                 <h2 className="font-display text-xl font-extrabold mb-1">Structure des blindes</h2>
                 <p className="text-sm text-ink-muted mb-4">Modifier un niveau passe la formule en « sur mesure ».</p>
                 <BlindStructureEditor
-                  structure={config.blindStructure}
-                  onChange={editStructure}
+                  structure={blindStructure}
+                  onChange={setCustomStructure}
                   playerCount={validPlayers.length}
                   startingStack={config.startingStack}
                   maxPlayersPerTable={config.maxPlayersPerTable}
@@ -405,16 +432,9 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 function Stepper({ value, min, max, onChange, label }: {
   value: number; min: number; max: number; onChange: (n: number) => void; label: string;
 }) {
-  const set = (n: number) => { onChange(Math.max(min, Math.min(max, n))); feedback('tick'); };
   return (
-    <span className="inline-flex items-center" role="group" aria-label={label}>
-      <button type="button" onClick={() => set(value - 1)} disabled={value <= min} aria-label="Moins" className="grid place-items-center w-11 h-11 rounded-full text-ink hover:bg-sunken disabled:opacity-30">
-        <Minus size={18} />
-      </button>
-      <span className="w-8 text-center font-bold num" aria-live="polite">{value}</span>
-      <button type="button" onClick={() => set(value + 1)} disabled={value >= max} aria-label="Plus" className="grid place-items-center w-11 h-11 rounded-full text-ink hover:bg-sunken disabled:opacity-30">
-        <Plus size={18} />
-      </button>
-    </span>
+    <UiStepper label={label} canDecrease={value > min} canIncrease={value < max} onStep={d => onChange(Math.max(min, Math.min(max, value + d)))}>
+      {value}
+    </UiStepper>
   );
 }

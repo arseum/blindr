@@ -93,6 +93,7 @@ export function ChipWheel({ values, value, onChange, label, format = shortValue 
 
     pad();
     center(indexOf(value), false);
+    current.current = -1; // nouvelle liste : se recaler sans annoncer de changement
     update();
     el.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
