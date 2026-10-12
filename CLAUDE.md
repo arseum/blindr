@@ -48,7 +48,7 @@ src/
   utils/presets.ts     — formules + valeurs des roulettes ; utils/bubble.ts — état de la bulle
   utils/blinds.ts      — calcul des niveaux (échelle de blindes, jetons retirés en cours de partie, SB = BB/2 ou 2/3) + valeurs jouables des roulettes tapis / grosse blinde
   hooks/useTapSwipe.ts — toucher vs glisser horizontal sur une même surface
-  store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1), settingsStore.ts ('blindr-settings')
+  store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1) — clés historiques, ne pas renommer (données des utilisateurs), settingsStore.ts ('blindr-settings')
   utils/  prizePool.ts, tournamentEstimator.ts, chips.ts (levelChip)
   constants.ts — formatChips() (exact sous 100 000), formatTime()
 public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)

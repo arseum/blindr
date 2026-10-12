@@ -103,7 +103,8 @@ Limites de la PWA sur iPhone, reportées à la version native :
 
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine
-- [ ] Vrai README
+- [x] Vrai README (captures dans docs/screenshots)
+- [x] Paquet `blindr`, dépôt GitHub renommé arseum/blindr (l'ancienne adresse redirige)
 - [ ] i18n FR/EN (optionnel V1)
 
 ## Revue
