@@ -1,7 +1,7 @@
 import { Trash2, Trophy } from 'lucide-react';
-import { CRCard } from '../components/ui/CRCard';
-import { CRButton } from '../components/ui/CRButton';
-import { CRBadge } from '../components/ui/CRBadge';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import { useHistoryStore } from '../store/historyStore';
 import type { Page } from '../types';
 
@@ -15,43 +15,42 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
   const totalGames = entries.length;
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-dvh p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-cr-gold">Historique</h1>
-            <p className="text-cr-blue-light text-sm mt-1">{totalGames} tournois enregistrés</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-accent">Historique</h1>
+            <p className="text-ink-muted text-sm mt-1">{totalGames} tournois enregistrés</p>
           </div>
           <div className="flex gap-3">
             {entries.length > 0 && (
-              <CRButton variant="red" size="sm" onClick={clearHistory}>
+              <Button variant="danger" size="sm" onClick={clearHistory}>
                 <Trash2 size={16} />
-              </CRButton>
+              </Button>
             )}
-            <CRButton variant="ghost" onClick={() => onNavigate('setup')}>
+            <Button variant="ghost" onClick={() => onNavigate('setup')}>
               ← Setup
-            </CRButton>
+            </Button>
           </div>
         </div>
 
         {entries.length === 0 ? (
-          <CRCard className="text-center py-16">
+          <Card className="text-center py-16">
             <div className="mx-auto mb-4 flex justify-center">
-              <img src="/clash_royal_todo/coffre.png" alt="" className="cr-supercell-only w-24 h-20 object-contain opacity-60" />
-              <Trophy size={48} className="cr-default-only text-[#2a4a7a]" />
+              <Trophy size={48} className="text-ink-faint" />
             </div>
-            <p className="text-[#525265] font-cinzel text-xl">Aucun tournoi terminé</p>
-            <p className="text-[#2a4a7a] text-sm mt-2">Les résultats apparaîtront ici</p>
-          </CRCard>
+            <p className="text-ink-faint font-display text-xl">Aucun tournoi terminé</p>
+            <p className="text-ink-faint text-sm mt-2">Les résultats apparaîtront ici</p>
+          </Card>
         ) : (
           <div className="flex flex-col gap-4">
             {entries.map(entry => (
-              <CRCard key={entry.id}>
+              <Card key={entry.id}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="font-cinzel font-bold text-cr-gold text-lg">{entry.name}</h3>
-                    <p className="text-cr-blue-light text-sm">
+                    <h3 className="font-display font-bold text-accent text-lg">{entry.name}</h3>
+                    <p className="text-ink-muted text-sm">
                       {new Date(entry.date).toLocaleDateString('fr-FR', {
                         day: 'numeric', month: 'long', year: 'numeric'
                       })}
@@ -59,50 +58,50 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
                   </div>
                   <button
                     onClick={() => removeEntry(entry.id)}
-                    className="text-[#525265] hover:text-[#e74c3c] transition-colors"
+                    className="text-ink-faint hover:text-danger transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 divide-x divide-cr-card-border/40 mt-4 border-t border-cr-card-border/40 pt-4">
+                <div className="grid grid-cols-4 divide-x divide-line/40 mt-4 border-t border-line/40 pt-4">
                   <div className="text-center px-2">
-                    <div className="font-cinzel font-bold text-lg text-white">{entry.playerCount}</div>
-                    <div className="text-[#525265] text-xs">joueurs</div>
+                    <div className="font-display font-bold text-lg text-ink">{entry.playerCount}</div>
+                    <div className="text-ink-faint text-xs">joueurs</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-cinzel font-bold text-lg text-white">{entry.duration}min</div>
-                    <div className="text-[#525265] text-xs">durée</div>
+                    <div className="font-display font-bold text-lg text-ink">{entry.duration}min</div>
+                    <div className="text-ink-faint text-xs">durée</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-cinzel font-bold text-lg text-cr-gold">{entry.totalPot}€</div>
-                    <div className="text-[#525265] text-xs">pot</div>
+                    <div className="font-display font-bold text-lg text-accent">{entry.totalPot}€</div>
+                    <div className="text-ink-faint text-xs">pot</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-cinzel font-bold text-lg text-cr-green">{entry.buyIn}€</div>
-                    <div className="text-[#525265] text-xs">buy-in</div>
+                    <div className="font-display font-bold text-lg text-success">{entry.buyIn}€</div>
+                    <div className="text-ink-faint text-xs">buy-in</div>
                   </div>
                 </div>
 
                 {entry.placements.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="font-cinzel text-sm text-cr-blue-light mb-2 uppercase tracking-wide">Classement</h4>
+                    <h4 className="font-display text-sm text-ink-muted mb-2 uppercase tracking-wide">Classement</h4>
                     <div className="flex flex-wrap gap-2">
                       {entry.placements.slice(0, 5).map((p, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5 bg-cr-darker rounded-lg px-2.5 py-1.5">
-                          <span className={`font-cinzel font-bold text-sm ${idx === 0 ? 'text-cr-gold' : idx === 1 ? 'text-[#a0aec0]' : idx === 2 ? 'text-[#cd7f32]' : 'text-[#525265]'}`}>
+                        <div key={idx} className="flex items-center gap-1.5 bg-sunken rounded-lg px-2.5 py-1.5">
+                          <span className={`font-display font-bold text-sm ${idx === 0 ? 'text-accent' : idx === 1 ? 'text-ink-muted' : idx === 2 ? 'text-chip-5000' : 'text-ink-faint'}`}>
                             #{p.position}
                           </span>
-                          <span className="text-[#e8e8e8] text-sm">{p.playerName}</span>
+                          <span className="text-ink text-sm">{p.playerName}</span>
                           {p.prize > 0 && (
-                            <CRBadge variant="green">{p.prize}€</CRBadge>
+                            <Badge variant="success">{p.prize}€</Badge>
                           )}
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-              </CRCard>
+              </Card>
             ))}
           </div>
         )}

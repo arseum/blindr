@@ -1,5 +1,5 @@
 import { Plus, Trash2, TrendingUp } from 'lucide-react';
-import { CRCard } from './ui/CRCard';
+import { Card } from './ui/Card';
 import type { DistributionMode, PalierEntry, PrizePoolConfig } from '../types';
 import { getPaidPlaces, defaultPaliers, defaultManualShares, calculatePrizes, positionLabel } from '../utils/prizePool';
 
@@ -103,33 +103,33 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
   const medal = (i: number) => i === 0 ? '#1' : i === 1 ? '#2' : i === 2 ? '#3' : `${i + 1}e`;
 
   return (
-    <CRCard>
-      <h2 className="font-cinzel text-lg font-bold text-cr-gold mb-5 flex items-center gap-2">
-        <TrendingUp size={18} className="text-cr-blue-light" /> Prize Pool
+    <Card>
+      <h2 className="font-display text-lg font-bold text-accent mb-5 flex items-center gap-2">
+        <TrendingUp size={18} className="text-ink-muted" /> Prize Pool
       </h2>
 
       {/* ── Buy-in split ─────────────────────────────────────────────────── */}
       <div className="mb-5">
-        <p className="text-[#8888a0] text-xs uppercase tracking-widest mb-3">
+        <p className="text-ink-muted text-xs uppercase tracking-widest mb-3">
           Répartition du buy-in{buyIn > 0 ? ` (${buyIn}€ / joueur)` : ''}
         </p>
 
         {/* Prize pool row (auto-computed, read-only) */}
         <div className="flex items-center gap-2 mb-2">
-          <span className="w-24 sm:w-28 text-sm font-medium text-cr-green">Prize pool</span>
-          <div className="flex-1 bg-cr-darker border border-[#27ae60]/40 rounded px-2 py-2 text-center font-cinzel font-bold text-cr-green">
+          <span className="w-24 sm:w-28 text-sm font-medium text-success">Prize pool</span>
+          <div className="flex-1 bg-sunken border border-success/40 rounded px-2 py-2 text-center font-display font-bold text-success">
             {prizePoolPct}%
           </div>
-          <span className="w-12 sm:w-14 text-right text-sm font-bold text-cr-green">{buyInAmountStr(prizePoolPct)}</span>
+          <span className="w-12 sm:w-14 text-right text-sm font-bold text-success">{buyInAmountStr(prizePoolPct)}</span>
         </div>
 
         {/* Kill system row */}
         <div className="flex items-center gap-2 mb-2">
           <button
             onClick={toggleKill}
-            className={`w-24 sm:w-28 text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0 ${killEnabled ? 'text-[#e67e22]' : 'text-[#525265] hover:text-[#8888a0]'}`}
+            className={`w-24 sm:w-28 text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0 ${killEnabled ? 'text-chip-5000' : 'text-ink-faint hover:text-ink-muted'}`}
           >
-            <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-colors ${killEnabled ? 'bg-[#e67e22] border-[#e67e22]' : 'border-[#4a5568]'}`}>
+            <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-colors ${killEnabled ? 'bg-chip-5000 border-chip-5000 text-on-accent' : 'border-ink-faint'}`}>
               {killEnabled ? '✓' : ''}
             </span>
             Kill
@@ -142,12 +142,12 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
               max={100 - rakePct}
               step={1}
               onChange={e => setKillPct(Number(e.target.value))}
-              className="flex-1 bg-cr-darker border border-[#e67e22]/50 rounded px-2 py-2 text-center text-white text-sm focus:outline-none focus:border-[#e67e22]"
+              className="flex-1 bg-sunken border border-chip-5000/50 rounded px-2 py-2 text-center text-ink text-sm focus:outline-none focus:border-chip-5000"
             />
           ) : (
-            <div className="flex-1 bg-cr-darker/30 border border-[#1a2d4a] rounded px-2 py-2 text-center text-[#2a4a7a] text-sm">désactivé</div>
+            <div className="flex-1 bg-sunken/30 border border-line rounded px-2 py-2 text-center text-ink-faint text-sm">désactivé</div>
           )}
-          <span className={`w-12 sm:w-14 text-right text-sm font-bold ${killEnabled ? 'text-[#e67e22]' : 'text-[#2a4a7a]'}`}>
+          <span className={`w-12 sm:w-14 text-right text-sm font-bold ${killEnabled ? 'text-chip-5000' : 'text-ink-faint'}`}>
             {killEnabled ? buyInAmountStr(killPct) : '—'}
           </span>
         </div>
@@ -156,9 +156,9 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
         <div className="flex items-center gap-2 mb-2">
           <button
             onClick={toggleRake}
-            className={`w-24 sm:w-28 text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0 ${rakeEnabled ? 'text-[#9b59b6]' : 'text-[#525265] hover:text-[#8888a0]'}`}
+            className={`w-24 sm:w-28 text-sm font-medium flex items-center gap-2 transition-colors flex-shrink-0 ${rakeEnabled ? 'text-chip-500' : 'text-ink-faint hover:text-ink-muted'}`}
           >
-            <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-colors ${rakeEnabled ? 'bg-[#9b59b6] border-[#9b59b6]' : 'border-[#4a5568]'}`}>
+            <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-colors ${rakeEnabled ? 'bg-chip-500 border-chip-500 text-on-accent' : 'border-ink-faint'}`}>
               {rakeEnabled ? '✓' : ''}
             </span>
             Rake
@@ -171,36 +171,36 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
               max={100 - killPct}
               step={1}
               onChange={e => setRakePct(Number(e.target.value))}
-              className="flex-1 bg-cr-darker border border-[#9b59b6]/50 rounded px-2 py-2 text-center text-white text-sm focus:outline-none focus:border-[#9b59b6]"
+              className="flex-1 bg-sunken border border-chip-500/50 rounded px-2 py-2 text-center text-ink text-sm focus:outline-none focus:border-chip-500"
             />
           ) : (
-            <div className="flex-1 bg-cr-darker/30 border border-[#1a2d4a] rounded px-2 py-2 text-center text-[#2a4a7a] text-sm">désactivé</div>
+            <div className="flex-1 bg-sunken/30 border border-line rounded px-2 py-2 text-center text-ink-faint text-sm">désactivé</div>
           )}
-          <span className={`w-12 sm:w-14 text-right text-sm font-bold ${rakeEnabled ? 'text-[#9b59b6]' : 'text-[#2a4a7a]'}`}>
+          <span className={`w-12 sm:w-14 text-right text-sm font-bold ${rakeEnabled ? 'text-chip-500' : 'text-ink-faint'}`}>
             {rakeEnabled ? buyInAmountStr(rakePct) : '—'}
           </span>
         </div>
 
-        <p className={`text-xs mt-1 ${splitOk ? 'text-cr-green' : 'text-[#e74c3c]'}`}>
+        <p className={`text-xs mt-1 ${splitOk ? 'text-success' : 'text-danger'}`}>
           Total : {totalSplit}%{splitOk ? ' ✓' : ' — doit être 100%'}
         </p>
       </div>
 
       {/* ── Kill system details ───────────────────────────────────────────── */}
       {killEnabled && (
-        <div className="mb-5 p-3 bg-[#e67e22]/5 border border-[#e67e22]/20 rounded-lg">
-          <p className="text-[#e67e22] text-xs uppercase tracking-widest mb-3">Détail kill system</p>
+        <div className="mb-5 p-3 bg-chip-5000/5 border border-chip-5000/20 rounded-lg">
+          <p className="text-chip-5000 text-xs uppercase tracking-widest mb-3">Détail kill system</p>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[#8888a0] flex-1">Montant par kill</span>
+            <span className="text-sm text-ink-muted flex-1">Montant par kill</span>
             <input
               type="number"
               value={killSystem.amountPerKill}
               min={0}
               step={1}
               onChange={e => update({ killSystem: { ...killSystem, amountPerKill: Number(e.target.value) } })}
-              className="w-24 bg-cr-darker border border-[#e67e22]/50 rounded px-3 py-2 text-center text-white text-sm focus:outline-none focus:border-[#e67e22]"
+              className="w-24 bg-sunken border border-chip-5000/50 rounded px-3 py-2 text-center text-ink text-sm focus:outline-none focus:border-chip-5000"
             />
-            <span className="text-sm text-[#8888a0]">€</span>
+            <span className="text-sm text-ink-muted">€</span>
           </div>
         </div>
       )}
@@ -208,7 +208,7 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
       {/* ── % ITM ─────────────────────────────────────────────────────────── */}
       <div className="mb-5">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <label className="text-[#8888a0] text-xs uppercase tracking-widest w-14 flex-shrink-0">% ITM</label>
+          <label className="text-ink-muted text-xs uppercase tracking-widest w-14 flex-shrink-0">% ITM</label>
           <input
             type="number"
             value={itmPct}
@@ -216,9 +216,9 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
             max={100}
             step={1}
             onChange={e => update({ itmPct: Math.max(1, Math.min(100, Number(e.target.value))) })}
-            className="w-20 bg-cr-darker border border-cr-card-border rounded px-3 py-2 text-center text-white text-sm focus:outline-none focus:border-cr-gold"
+            className="w-20 bg-sunken border border-line rounded px-3 py-2 text-center text-ink text-sm focus:outline-none focus:border-accent"
           />
-          <span className="text-[#8888a0] text-sm">
+          <span className="text-ink-muted text-sm">
             {playerCount > 0
               ? `→ ${J} place${J > 1 ? 's' : ''} payée${J > 1 ? 's' : ''} / ${playerCount} joueur${playerCount > 1 ? 's' : ''}`
               : "→ ajoutez des joueurs"}
@@ -230,9 +230,9 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
       <div>
         {/* Header avec dotation totale */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[#8888a0] text-xs uppercase tracking-widest">Distribution du prize pool</p>
+          <p className="text-ink-muted text-xs uppercase tracking-widest">Distribution du prize pool</p>
           {hasAmounts && (
-            <span className="font-cinzel font-bold text-cr-green text-sm">
+            <span className="font-display font-bold text-success text-sm">
               Dotation : {prizePoolAmount}€
             </span>
           )}
@@ -245,13 +245,11 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
               <button
                 key={mode}
                 onClick={() => setMode(mode)}
-                data-variant={selected ? 'gold' : 'blue'}
-                data-selected={selected ? 'true' : undefined}
-                style={{ borderRadius: 'var(--theme-btn-radius, 0.5rem)' }}
-                className={`cr-btn cr-mode-btn flex-1 py-2.5 font-cinzel text-sm font-bold tracking-wide transition-all duration-150 select-none ${
+                aria-pressed={selected}
+                className={`flex-1 min-h-11 rounded-control text-sm font-semibold transition-colors duration-150 select-none ${
                   selected
-                    ? 'bg-cr-gold text-cr-darker border border-cr-gold/70'
-                    : 'bg-cr-blue-mid text-white border border-cr-blue-mid/70'
+                    ? 'bg-accent text-on-accent'
+                    : 'bg-sunken text-ink-muted hover:text-ink'
                 }`}
               >
                 {mode === 'auto' ? 'Auto' : mode === 'paliers' ? 'Paliers' : 'Manuel'}
@@ -263,7 +261,7 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
         {/* Auto mode — prévisualisation séparée */}
         {distributionMode === 'auto' && (() => {
           if (!hasAmounts || J === 0) return (
-            <p className="text-[#525265] text-xs text-center italic py-2">
+            <p className="text-ink-faint text-xs text-center italic py-2">
               Distribution automatique selon la formule Winamax (nombre d'or)
             </p>
           );
@@ -274,22 +272,22 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
                 <div
                   key={position}
                   className={`flex items-center gap-3 rounded px-3 py-1.5 text-sm ${
-                    position === 1 ? 'bg-[#f4c842]/10 border border-[#f4c842]/20' :
-                    position === 2 ? 'bg-white/5 border border-white/10' :
-                    position === 3 ? 'bg-[#cd7f32]/10 border border-[#cd7f32]/15' :
-                    'bg-cr-darker'
+                    position === 1 ? 'bg-chip-1000/10 border border-chip-1000/20' :
+                    position === 2 ? 'bg-sunken border border-line' :
+                    position === 3 ? 'bg-chip-5000/10 border border-chip-5000/15' :
+                    'bg-sunken'
                   }`}
                 >
-                  <span className={`font-cinzel font-bold w-8 flex-shrink-0 ${position <= 3 ? 'text-cr-gold' : 'text-[#525265]'}`}>
+                  <span className={`font-display font-bold w-8 flex-shrink-0 ${position <= 3 ? 'text-accent' : 'text-ink-faint'}`}>
                     {positionLabel(position)}
                   </span>
                   <div className="flex-1">
-                    <div className="h-1 bg-cr-darker rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-[#27ae60]" style={{ width: `${percentage}%` }} />
+                    <div className="h-1 bg-sunken rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-success" style={{ width: `${percentage}%` }} />
                     </div>
                   </div>
-                  <span className="text-[#8888a0] text-xs w-10 text-right">{percentage}%</span>
-                  <span className="font-cinzel font-bold text-cr-green w-14 text-right">{amount}€</span>
+                  <span className="text-ink-muted text-xs w-10 text-right">{percentage}%</span>
+                  <span className="font-display font-bold text-success w-14 text-right">{amount}€</span>
                 </div>
               ))}
             </div>
@@ -300,7 +298,7 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
         {distributionMode === 'paliers' && (
           <div className="flex flex-col gap-2">
             {paliers.length === 0 && (
-              <p className="text-[#525265] text-xs text-center italic py-1">
+              <p className="text-ink-faint text-xs text-center italic py-1">
                 {J === 0 ? 'Ajoutez des joueurs pour configurer les paliers' : 'Cliquez sur + pour ajouter un palier'}
               </p>
             )}
@@ -313,25 +311,25 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
               return (
                 <div key={idx} className="overflow-x-auto">
                 <div className="flex items-center gap-2 min-w-max">
-                  <span className="text-[#525265] text-xs w-12 flex-shrink-0">Places</span>
+                  <span className="text-ink-faint text-xs w-12 flex-shrink-0">Places</span>
                   <input
                     type="number"
                     value={palier.fromPosition}
                     min={1}
                     max={palier.toPosition}
                     onChange={e => updatePalier(idx, { fromPosition: Number(e.target.value) })}
-                    className="w-12 bg-cr-darker border border-cr-card-border rounded px-2 py-1.5 text-center text-white text-sm focus:outline-none focus:border-cr-gold"
+                    className="w-12 bg-sunken border border-line rounded px-2 py-1.5 text-center text-ink text-sm focus:outline-none focus:border-accent"
                   />
-                  <span className="text-[#525265] text-xs">→</span>
+                  <span className="text-ink-faint text-xs">→</span>
                   <input
                     type="number"
                     value={palier.toPosition}
                     min={palier.fromPosition}
                     max={J || 999}
                     onChange={e => updatePalier(idx, { toPosition: Number(e.target.value) })}
-                    className="w-12 bg-cr-darker border border-cr-card-border rounded px-2 py-1.5 text-center text-white text-sm focus:outline-none focus:border-cr-gold"
+                    className="w-12 bg-sunken border border-line rounded px-2 py-1.5 text-center text-ink text-sm focus:outline-none focus:border-accent"
                   />
-                  <span className="text-[#525265] text-xs">:</span>
+                  <span className="text-ink-faint text-xs">:</span>
                   <input
                     type="number"
                     value={palier.totalPct}
@@ -339,18 +337,18 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
                     max={100}
                     step={0.5}
                     onChange={e => updatePalier(idx, { totalPct: Number(e.target.value) })}
-                    className="w-16 bg-cr-darker border border-cr-card-border rounded px-2 py-1.5 text-center text-white text-sm focus:outline-none focus:border-cr-gold"
+                    className="w-16 bg-sunken border border-line rounded px-2 py-1.5 text-center text-ink text-sm focus:outline-none focus:border-accent"
                   />
-                  <span className="text-[#8888a0] text-xs">%</span>
+                  <span className="text-ink-muted text-xs">%</span>
                   {palierTotal && (
-                    <span className="text-cr-green font-bold text-xs flex-1 text-right">
+                    <span className="text-success font-bold text-xs flex-1 text-right">
                       {palierTotal}{perPerson ? ` (${perPerson})` : ''}
                     </span>
                   )}
                   {!palierTotal && <span className="flex-1" />}
                   <button
                     onClick={() => removePalier(idx)}
-                    className="text-[#525265] hover:text-[#e74c3c] transition-colors flex-shrink-0"
+                    className="text-ink-faint hover:text-danger transition-colors flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -362,11 +360,11 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
               <button
                 onClick={addPalier}
                 disabled={J === 0}
-                className="flex items-center gap-1 text-xs text-cr-blue-light hover:text-cr-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 text-xs text-ink-muted hover:text-accent transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Plus size={13} /> Ajouter un palier
               </button>
-              <span className={`text-xs ${Math.abs(palierSum - 100) < 0.1 ? 'text-cr-green' : 'text-[#e74c3c]'}`}>
+              <span className={`text-xs ${Math.abs(palierSum - 100) < 0.1 ? 'text-success' : 'text-danger'}`}>
                 Total : {Math.round(palierSum * 10) / 10}%{Math.abs(palierSum - 100) < 0.1 ? ' ✓' : ''}
               </span>
             </div>
@@ -377,17 +375,17 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
         {distributionMode === 'manual' && (
           <div>
             {J === 0 ? (
-              <p className="text-[#525265] text-xs text-center italic py-2">
+              <p className="text-ink-faint text-xs text-center italic py-2">
                 Ajoutez des joueurs pour configurer la distribution manuelle
               </p>
             ) : (
               <>
                 {!manualSizeOk && (
-                  <div className="flex items-center justify-between mb-2 p-2 bg-[#e74c3c]/10 border border-[#e74c3c]/30 rounded text-xs">
-                    <span className="text-[#e74c3c]">
+                  <div className="flex items-center justify-between mb-2 p-2 bg-danger/10 border border-danger/30 rounded text-xs">
+                    <span className="text-danger">
                       Le nombre de places a changé ({J} attendu, {manualShares.length} configuré)
                     </span>
-                    <button onClick={resetManual} className="text-cr-gold hover:underline ml-2 flex-shrink-0">
+                    <button onClick={resetManual} className="text-accent hover:underline ml-2 flex-shrink-0">
                       Réinitialiser
                     </button>
                   </div>
@@ -398,7 +396,7 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
                     const amt = poolAmountStr(pct);
                     return (
                       <div key={i} className="flex items-center gap-3">
-                        <span className="text-[#8888a0] text-sm w-8 text-right flex-shrink-0">{medal(i)}</span>
+                        <span className="text-ink-muted text-sm w-8 text-right flex-shrink-0">{medal(i)}</span>
                         <input
                           type="number"
                           value={pct}
@@ -406,11 +404,11 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
                           max={100}
                           step={0.5}
                           onChange={e => updateShare(i, Number(e.target.value))}
-                          className="flex-1 bg-cr-darker border border-cr-card-border rounded px-3 py-1.5 text-center text-white text-sm focus:outline-none focus:border-cr-gold"
+                          className="flex-1 bg-sunken border border-line rounded px-3 py-1.5 text-center text-ink text-sm focus:outline-none focus:border-accent"
                         />
-                        <span className="text-[#8888a0] text-xs w-4">%</span>
+                        <span className="text-ink-muted text-xs w-4">%</span>
                         {amt
-                          ? <span className="font-cinzel font-bold text-cr-green text-sm w-14 text-right flex-shrink-0">{amt}</span>
+                          ? <span className="font-display font-bold text-success text-sm w-14 text-right flex-shrink-0">{amt}</span>
                           : <span className="w-14 flex-shrink-0" />
                         }
                       </div>
@@ -420,11 +418,11 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
                 <div className="flex items-center justify-between mt-2">
                   <button
                     onClick={resetManual}
-                    className="text-xs text-[#525265] hover:text-[#8888a0] transition-colors"
+                    className="text-xs text-ink-faint hover:text-ink-muted transition-colors"
                   >
                     Répartition égale
                   </button>
-                  <span className={`text-xs ${Math.abs(manualSum - 100) < 0.1 ? 'text-cr-green' : 'text-[#e74c3c]'}`}>
+                  <span className={`text-xs ${Math.abs(manualSum - 100) < 0.1 ? 'text-success' : 'text-danger'}`}>
                     Total : {Math.round(manualSum * 10) / 10}%{Math.abs(manualSum - 100) < 0.1 ? ' ✓' : ' — doit être 100%'}
                   </span>
                 </div>
@@ -433,6 +431,6 @@ export function PrizePoolSetupCard({ buyIn, playerCount, prizePool, onChange }: 
           </div>
         )}
       </div>
-    </CRCard>
+    </Card>
   );
 }

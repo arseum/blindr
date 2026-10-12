@@ -1,98 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Lilita+One&display=swap');
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 /* ============================================================
-   TAILWIND THEME TOKENS  — default (Obsidian Club)
-   ============================================================ */
-@theme {
-  --color-cr-gold:        #c8a86a;
-  --color-cr-gold-dark:   #8a6a38;
-  --color-cr-blue:        #1a3555;
-  --color-cr-blue-mid:    #2a5070;
-  --color-cr-blue-light:  #6890b0;
-  --color-cr-purple:      #6a4878;
-  --color-cr-red:         #924848;
-  --color-cr-green:       #488a62;
-  --color-cr-dark:        #0f0f18;
-  --color-cr-darker:      #09090e;
-  --color-cr-card:        #161620;
-  --color-cr-card-border: #222230;
-  --font-cinzel: 'Cinzel', serif;
-  --font-inter:  'DM Sans', sans-serif;
-}
-
-/* ============================================================
-   DEFAULT THEME extra vars
-   ============================================================ */
-:root {
-  --theme-heading-font:      'Cinzel', serif;
-  --theme-overlay-color:     rgba(9, 9, 14, 0.55);
-  --theme-gold-glow:         rgba(200, 168, 106, 0.25);
-  --theme-gold-glow-strong:  rgba(200, 168, 106, 0.45);
-  --theme-btn-radius:        0.5rem;
-}
-
-/* ============================================================
-   SUPERCELL THEME — Clash Royale authentic palette
-   ============================================================ */
-[data-theme="supercell"] {
-  /* Navy + gold + vivid accents — true CR palette */
-  --color-cr-gold:        #f4c842;
-  --color-cr-gold-dark:   #d98000;
-  --color-cr-blue:        #0d1833;
-  --color-cr-blue-mid:    #3070c0;
-  --color-cr-blue-light:  #8899cc;
-  --color-cr-purple:      #9b40e0;
-  --color-cr-red:         #d02020;
-  --color-cr-green:       #6ab020;
-  --color-cr-dark:        #111d3a;
-  --color-cr-darker:      #0a1020;
-  --color-cr-card:        #1a2b52;
-  --color-cr-card-border: #1e3060;
-
-  --theme-heading-font:       'Lilita One', 'Cinzel', serif;
-  --theme-overlay-color:      rgba(10, 16, 32, 0.65);
-  --theme-gold-glow:          rgba(244, 200, 66, 0.30);
-  --theme-gold-glow-strong:   rgba(255, 160, 0, 0.60);
-  --theme-btn-radius:         8px;
-}
-
-/* ============================================================
-   GLOBAL BASE STYLES
+   BASE
    ============================================================ */
 * {
   box-sizing: border-box;
-}
-
-/* Scrollbars — invisible by default, styled in supercell theme */
-* {
-  scrollbar-width: none;          /* Firefox */
-}
-*::-webkit-scrollbar {
-  display: none;                  /* Chrome/Safari/Edge */
-}
-
-/* Supercell: thin dark scrollbar with gold thumb */
-[data-theme="supercell"] * {
-  scrollbar-width: thin;
-  scrollbar-color: #f4a800 #0a1020;
-}
-[data-theme="supercell"] *::-webkit-scrollbar {
-  display: block;
-  width: 4px;
-  height: 4px;
-}
-[data-theme="supercell"] *::-webkit-scrollbar-track {
-  background: #0a1020;
-  border-radius: 2px;
-}
-[data-theme="supercell"] *::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #f4c842, #d98000);
-  border-radius: 2px;
-  box-shadow: 0 0 4px rgba(244, 200, 66, 0.4);
-}
-[data-theme="supercell"] *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #ffe566, #f4a800);
 }
 
 button, [role="button"] {
@@ -103,355 +16,46 @@ button:disabled {
   cursor: not-allowed;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background-color: var(--color-cr-darker);
-  color: #e0ddd8;
-  font-family: var(--theme-body-font, 'DM Sans', sans-serif);
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   margin: 0;
   padding: 0;
-  transition: background-color 0.4s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, .font-cinzel {
-  font-family: var(--theme-heading-font);
-  letter-spacing: 0.04em;
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* Titres : Archivo condensée — la graisse reste donnée par les classes font-* */
+@utility font-display {
+  font-stretch: 75%;
+  letter-spacing: -0.005em;
 }
 
 /* ============================================================
-   APP BACKGROUNDS
+   BARRE DE PROGRESSION DU NIVEAU (remplacée par les jetons en phase 3)
    ============================================================ */
-
-/* Default: deep obsidian */
-.bg-app-default {
-  background:
-    radial-gradient(ellipse at 40% 0%, #1a1a28 0%, #0f0f18 50%, #09090e 100%);
-}
-
-/* Supercell: deep navy arena */
-.bg-app-supercell {
-  background:
-    radial-gradient(ellipse at 50% -10%, #1e3565 0%, #111d3a 55%, #0a1020 100%);
-}
-
-/* ============================================================
-   SHARED COMPONENT HELPERS
-   ============================================================ */
-
-/* Gold glow border — used by CRCard gold variant */
-.card-gold-glow {
-  border: 1px solid var(--color-cr-gold) !important;
-  box-shadow: 0 0 24px var(--theme-gold-glow), 0 1px 0 rgba(255,255,255,0.04) inset;
-}
-
-[data-theme="supercell"] .card-gold-glow {
-  border: 2px solid #f4c842 !important;
-  box-shadow: 0 0 28px rgba(244, 200, 66, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.12),
-              0 4px 16px rgba(0, 0, 0, 0.6);
-}
-
-/* Supercell: navy panel with deep shadow */
-[data-theme="supercell"] .cr-card-bg {
-  background: linear-gradient(to bottom, #1e3060, #111d3a) !important;
-  border: 2px solid #000 !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 4px 20px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.04) !important;
-}
-
-/* ============================================================
-   SUPERCELL BUTTONS — 3D Clash Royale style
-   Technique: box-shadow bottom layer = "base", transform on :active
-   ============================================================ */
-
-[data-theme="supercell"] button.cr-btn {
-  border: 2px solid rgba(0, 0, 0, 0.85);
-  transition: transform 80ms ease, box-shadow 80ms ease, filter 120ms ease;
-}
-
-[data-theme="supercell"] button.cr-btn:disabled {
-  box-shadow: none !important;
-  transform: none !important;
-  filter: grayscale(0.4) brightness(0.5) !important;
-}
-
-/* — Gold / Primary — */
-[data-theme="supercell"] button.cr-btn[data-variant="gold"] {
-  background: linear-gradient(to bottom, #ffe566 0%, #f4a800 55%, #d98000 100%);
-  border-color: #000;
-  color: #fff;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
-  box-shadow:
-    0 4px 0 #7a4a1a,
-    0 5px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="gold"]:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.08);
-  box-shadow:
-    0 5px 0 #7a4a1a,
-    0 6px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.40),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 0 14px rgba(255, 200, 50, 0.45);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="gold"]:not(:disabled):active {
-  transform: translateY(3px);
-  filter: brightness(0.94);
-  box-shadow:
-    0 1px 0 #7a4a1a,
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* — Green / Secondary — */
-[data-theme="supercell"] button.cr-btn[data-variant="green"] {
-  background: linear-gradient(to bottom, #a8e04a 0%, #5a9e00 55%, #3a7000 100%);
-  border-color: #000;
-  color: #fff;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
-  box-shadow:
-    0 4px 0 #2a4a00,
-    0 5px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="green"]:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.08);
-  box-shadow:
-    0 5px 0 #2a4a00,
-    0 6px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.36),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(100, 200, 30, 0.35);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="green"]:not(:disabled):active {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 #2a4a00,
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* — Red / Destructive — */
-[data-theme="supercell"] button.cr-btn[data-variant="red"] {
-  background: linear-gradient(to bottom, #f46060 0%, #c01010 55%, #900000 100%);
-  border-color: #000;
-  color: #fff;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
-  box-shadow:
-    0 4px 0 #600000,
-    0 5px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="red"]:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-  box-shadow:
-    0 5px 0 #600000,
-    0 6px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.30),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(200, 30, 30, 0.45);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="red"]:not(:disabled):active {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 #600000,
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* — Blue / Info — */
-[data-theme="supercell"] button.cr-btn[data-variant="blue"] {
-  background: linear-gradient(to bottom, #5090e0 0%, #2060b0 55%, #1040a0 100%);
-  border-color: #000;
-  color: #fff;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
-  box-shadow:
-    0 4px 0 #0a2060,
-    0 5px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="blue"]:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.12);
-  box-shadow:
-    0 5px 0 #0a2060,
-    0 6px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.30),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(60, 120, 220, 0.45);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="blue"]:not(:disabled):active {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 #0a2060,
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* — Ghost / Back — */
-[data-theme="supercell"] button.cr-btn[data-variant="ghost"] {
-  background: linear-gradient(to bottom, #4a5a7a 0%, #2a3a5a 100%);
-  border-color: #000;
-  color: #c0c8e0;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
-  box-shadow:
-    0 4px 0 #0d1a2a,
-    0 5px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.10),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="ghost"]:not(:disabled):hover {
-  transform: translateY(-1px);
-  filter: brightness(1.12);
-  color: #e0e8ff;
-  box-shadow:
-    0 5px 0 #0d1a2a,
-    0 6px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-}
-[data-theme="supercell"] button.cr-btn[data-variant="ghost"]:not(:disabled):active {
-  transform: translateY(3px);
-  box-shadow:
-    0 1px 0 #0d1a2a,
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    inset 0 2px 0 rgba(0, 0, 0, 0.12);
-}
-
-/* ============================================================
-   SUPERCELL TYPOGRAPHY — headings with hard drop shadow
-   ============================================================ */
-[data-theme="supercell"] .font-cinzel,
-[data-theme="supercell"] h1,
-[data-theme="supercell"] h2,
-[data-theme="supercell"] h3 {
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.80);
-}
-
-/* ============================================================
-   THEME VISIBILITY HELPERS
-   ============================================================ */
-.cr-supercell-only { display: none; }
-[data-theme="supercell"] .cr-supercell-only { display: block; }
-
-.cr-default-only { display: block; }
-[data-theme="supercell"] .cr-default-only { display: none; }
-
-/* ============================================================
-   TIMER PROGRESS BAR
-   ============================================================ */
-.cr-timer-bar-track {
-  height: 3px;
-  background: var(--color-cr-card-border);
+.timer-bar-track {
+  height: 4px;
+  background: var(--color-line);
   overflow: hidden;
 }
-.cr-timer-bar-fill {
+.timer-bar-fill {
   height: 100%;
-  background: var(--color-cr-gold);
+  background: var(--color-accent);
   transition: width 1s linear;
 }
-.cr-timer-bar-fill.cr-timer-bar-warning {
-  background: var(--color-cr-red);
-}
-
-/* Supercell: thick CR-style timer bar */
-[data-theme="supercell"] .cr-timer-bar-track {
-  height: 16px;
-  background: #040810;
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-[data-theme="supercell"] .cr-timer-bar-fill {
-  background: linear-gradient(to bottom, #ffe566 0%, #f4a800 50%, #d98000 100%);
-  box-shadow:
-    4px 0 14px rgba(255, 200, 50, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  position: relative;
-}
-[data-theme="supercell"] .cr-timer-bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 35%;
-  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
-  animation: timerShimmer 2.2s ease-in-out infinite;
-}
-@keyframes timerShimmer {
-  0%   { left: -35%; }
-  100% { left: 120%; }
-}
-[data-theme="supercell"] .cr-timer-bar-fill.cr-timer-bar-warning {
-  background: linear-gradient(to bottom, #ff7070 0%, #d02020 50%, #900000 100%);
-  box-shadow: 4px 0 14px rgba(255, 50, 50, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  animation: timerWarning 0.6s ease-in-out infinite;
-}
-[data-theme="supercell"] .cr-timer-bar-fill.cr-timer-bar-warning::after {
-  display: none;
-}
-
-/* TV variant — bleu pour contraster avec le timer gold */
-[data-theme="supercell"] .cr-timer-bar-fill.cr-timer-bar-blue {
-  background: linear-gradient(to bottom, #60b0ff 0%, #2060c0 50%, #0a40a0 100%);
-  box-shadow: 4px 0 14px rgba(60, 130, 255, 0.7),
-              inset 0 1px 0 rgba(255, 255, 255, 0.30),
-              inset 0 -1px 0 rgba(0, 0, 0, 0.30);
-}
-.cr-timer-bar-fill.cr-timer-bar-blue {
-  background: #4a8fd4;
-}
-@keyframes timerWarning {
-  0%, 100% { filter: brightness(1); }
-  50%       { filter: brightness(1.45); }
-}
-
-/* ============================================================
-   LEVEL RIBBON — ruban_2.png recolorisé gold via CSS filter
-   ============================================================ */
-.cr-level-ribbon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-[data-theme="supercell"] .cr-level-ribbon {
-  position: relative;
-  min-width: 210px;
-  padding: 10px 44px 18px;
-  margin-bottom: 2px;
-  color: #fff !important;
-}
-[data-theme="supercell"] .cr-level-ribbon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('/clash_royal_todo/ruban_2.png') center / 100% 100% no-repeat;
-  filter: hue-rotate(185deg) saturate(2.4) brightness(0.82);
-  pointer-events: none;
-}
-[data-theme="supercell"] .cr-level-ribbon > span {
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9) !important;
-  color: #fff !important;
-}
-
-/* ============================================================
-   MODE SELECTOR — Prize pool distribution buttons
-   ============================================================ */
-.cr-mode-btn {
-  position: relative;
+.timer-bar-fill.timer-bar-warning {
+  background: var(--color-danger);
 }
 
 /* ============================================================
@@ -465,11 +69,6 @@ h1, h2, h3, .font-cinzel {
 @keyframes prizeScroll {
   0%, 15%   { transform: translateY(0); }
   85%, 100% { transform: translateY(var(--prize-scroll-dist, 0px)); }
-}
-
-@keyframes goldPulse {
-  0%, 100% { box-shadow: 0 0 8px var(--theme-gold-glow); }
-  50%       { box-shadow: 0 0 24px var(--theme-gold-glow-strong); }
 }
 
 @keyframes podiumRise {

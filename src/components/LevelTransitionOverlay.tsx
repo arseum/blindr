@@ -5,7 +5,6 @@ export type TransitionEffect = 'radial' | 'curtain' | 'ascend';
 interface Props {
   effect: TransitionEffect;
   levelLabel: string;
-  tvBg: string;
   onDone: () => void;
 }
 
@@ -28,12 +27,12 @@ function useDone(onDone: () => void, duration: number) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-export function LevelTransitionOverlay({ effect, levelLabel, tvBg, onDone }: Props) {
+export function LevelTransitionOverlay({ effect, levelLabel, onDone }: Props) {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 9999 }}>
       {effect === 'radial'  && <RadialEffect  onDone={onDone} duration={DURATIONS.radial}  label={levelLabel} />}
       {effect === 'curtain' && <CurtainEffect onDone={onDone} duration={DURATIONS.curtain} label={levelLabel} />}
-      {effect === 'ascend'  && <AscendEffect  onDone={onDone} duration={DURATIONS.ascend}  label={levelLabel} tvBg={tvBg} />}
+      {effect === 'ascend'  && <AscendEffect  onDone={onDone} duration={DURATIONS.ascend}  label={levelLabel} />}
     </div>
   );
 }
@@ -47,24 +46,24 @@ function RadialEffect({ onDone, duration, label }: { onDone: () => void; duratio
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         width: '40vmax', height: '40vmax', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(200,160,60,0.6) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, color-mix(in srgb, var(--color-accent) 60%, transparent) 0%, transparent 70%)',
         animation: `lt-radial-glow ${d} ease-out forwards`,
       }} />
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
         width: '200vmax', height: '200vmax', borderRadius: '50%',
-        border: '30px solid rgba(200,160,60,0.75)',
-        boxShadow: '0 0 60px 20px rgba(200,160,60,0.3), inset 0 0 60px 20px rgba(200,160,60,0.15)',
+        border: '30px solid color-mix(in srgb, var(--color-accent) 75%, transparent)',
+        boxShadow: '0 0 60px 20px color-mix(in srgb, var(--color-accent) 30%, transparent), inset 0 0 60px 20px color-mix(in srgb, var(--color-accent) 15%, transparent)',
         animation: `lt-radial-ring ${d} cubic-bezier(0.15, 0.8, 0.4, 1) forwards`,
       }} />
       <div style={{
         position: 'absolute', inset: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span className="font-cinzel font-black tracking-widest uppercase" style={{
+        <span className="font-display font-black tracking-widest uppercase" style={{
           fontSize: 'clamp(2rem, 7vw, 6rem)',
-          color: '#f4c842',
-          textShadow: '0 0 40px rgba(244,200,66,0.9), 0 0 80px rgba(244,200,66,0.5)',
+          color: 'var(--color-accent)',
+          textShadow: '0 0 40px color-mix(in srgb, var(--color-accent) 90%, transparent), 0 0 80px color-mix(in srgb, var(--color-accent) 50%, transparent)',
           animation: `lt-radial-text ${d} ease forwards`,
         }}>
           {label}
@@ -83,30 +82,30 @@ function CurtainEffect({ onDone, duration, label }: { onDone: () => void; durati
     <>
       <div style={{
         position: 'absolute', top: 0, left: 0, width: '50%', height: '100%',
-        background: 'linear-gradient(to right, #050508, #0d0d1a)',
-        borderRight: '1px solid rgba(200,168,106,0.3)',
+        background: 'linear-gradient(to right, var(--color-canvas), var(--color-surface))',
+        borderRight: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
         animation: `lt-curtain-left ${d} ${ease} forwards`,
       }}>
         <div style={{
           position: 'absolute', top: 0, right: 0, width: '60px', height: '100%',
-          background: 'linear-gradient(to right, transparent, rgba(200,168,106,0.08))',
+          background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-accent) 8%, transparent))',
         }} />
       </div>
       <div style={{
         position: 'absolute', top: 0, right: 0, width: '50%', height: '100%',
-        background: 'linear-gradient(to left, #050508, #0d0d1a)',
-        borderLeft: '1px solid rgba(200,168,106,0.3)',
+        background: 'linear-gradient(to left, var(--color-canvas), var(--color-surface))',
+        borderLeft: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
         animation: `lt-curtain-right ${d} ${ease} forwards`,
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '60px', height: '100%',
-          background: 'linear-gradient(to left, transparent, rgba(200,168,106,0.08))',
+          background: 'linear-gradient(to left, transparent, color-mix(in srgb, var(--color-accent) 8%, transparent))',
         }} />
       </div>
       <div style={{
         position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
         width: '2px', height: '100%',
-        background: 'linear-gradient(to bottom, transparent, rgba(200,168,106,0.6), transparent)',
+        background: 'linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-accent) 60%, transparent), transparent)',
         animation: `lt-curtain-label ${d} ease forwards`,
       }} />
       <div style={{
@@ -114,16 +113,16 @@ function CurtainEffect({ onDone, duration, label }: { onDone: () => void; durati
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px',
         animation: `lt-curtain-label ${d} ease forwards`,
       }}>
-        <span className="font-cinzel font-black tracking-widest uppercase" style={{
+        <span className="font-display font-black tracking-widest uppercase" style={{
           fontSize: 'clamp(2rem, 8vw, 7rem)',
-          color: '#c8a86a',
-          textShadow: '0 0 60px rgba(200,168,106,0.9), 0 0 120px rgba(200,168,106,0.4)',
+          color: 'var(--color-accent)',
+          textShadow: '0 0 60px color-mix(in srgb, var(--color-accent) 90%, transparent), 0 0 120px color-mix(in srgb, var(--color-accent) 40%, transparent)',
         }}>
           {label}
         </span>
         <div style={{
           width: 'clamp(80px, 20vw, 300px)', height: '1px',
-          background: 'linear-gradient(to right, transparent, #c8a86a, transparent)',
+          background: 'linear-gradient(to right, transparent, var(--color-accent), transparent)',
         }} />
       </div>
     </>
@@ -132,14 +131,14 @@ function CurtainEffect({ onDone, duration, label }: { onDone: () => void; durati
 
 /* ── 3. Ascension — fond qui monte + traînées lumineuses ── */
 const STREAK_COLORS = [
-  'rgba(255,255,255,0.9)',
-  'rgba(244,200,66,0.8)',
-  'rgba(200,168,106,0.7)',
-  'rgba(255,220,120,0.85)',
+  'color-mix(in srgb, var(--color-canvas) 90%, transparent)',
+  'color-mix(in srgb, var(--color-accent) 80%, transparent)',
+  'color-mix(in srgb, var(--color-accent) 70%, transparent)',
+  'color-mix(in srgb, var(--color-accent) 85%, transparent)',
 ];
 
-function AscendEffect({ onDone, duration, label, tvBg }: {
-  onDone: () => void; duration: number; label: string; tvBg: string;
+function AscendEffect({ onDone, duration, label }: {
+  onDone: () => void; duration: number; label: string;
 }) {
   useDone(onDone, duration);
   const d = `${duration}ms`;
@@ -161,16 +160,14 @@ function AscendEffect({ onDone, duration, label, tvBg }: {
       {/* Image de fond qui zoome vers le haut */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(${tvBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        background: 'radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--color-accent) 45%, var(--color-canvas)) 0%, var(--color-canvas) 75%)',
         animation: `lt-ascend-bg ${d} cubic-bezier(0.3, 0, 0.7, 1) forwards`,
       }} />
 
       {/* Vignette tunnel qui s'intensifie */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.95) 100%)',
+        background: 'radial-gradient(ellipse at center, transparent 20%, color-mix(in srgb, var(--color-canvas) 50%, transparent) 60%, var(--color-canvas) 100%)',
         animation: `lt-ascend-vignette ${d} ease-in forwards`,
       }} />
 
@@ -195,10 +192,10 @@ function AscendEffect({ onDone, duration, label, tvBg }: {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         animation: `lt-ascend-label ${d} ease forwards`,
       }}>
-        <span className="font-cinzel font-black tracking-widest uppercase" style={{
+        <span className="font-display font-black tracking-widest uppercase" style={{
           fontSize: 'clamp(2rem, 7vw, 6rem)',
-          color: '#ffffff',
-          textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 80px rgba(200,160,60,0.6)',
+          color: 'var(--color-ink)',
+          textShadow: '0 0 30px color-mix(in srgb, var(--color-canvas) 80%, transparent), 0 0 80px color-mix(in srgb, var(--color-accent) 60%, transparent)',
         }}>
           {label}
         </span>

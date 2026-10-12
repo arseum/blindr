@@ -1,70 +1,52 @@
-## Architecture du projet — Poker Royale
+## Architecture du projet — Blindr
 
 > **LIS CETTE SECTION EN PREMIER.** Elle évite de rescanner le projet à chaque session.
+> Ex-« Poker Royale » (thème Clash Royale supprimé). Cible : PWA grand public, téléphones + tablettes. Plan : `tasks/todo.md`.
 
 ### Stack
 - React 19 + TypeScript 5 + Vite 8
-- Tailwind CSS 4 (via `@import "tailwindcss"` dans `index.css`, pas de `tailwind.config.js`)
-- Zustand 5 (state management + persistence localStorage)
+- Tailwind CSS 4 (`@import "tailwindcss"` dans `index.css`, pas de `tailwind.config.js`)
+- Zustand 5 (state + persistance localStorage, stores versionnés)
+- Vitest (`npm test`) — tests dans `src/**/__tests__/`
+- Police Archivo variable auto-hébergée (`@fontsource-variable/archivo/wdth.css`, importée dans `main.tsx`)
 - Lucide React (icônes)
 
 ### Arborescence clé
 ```
 src/
-  main.tsx              — entry point. Si ?display → DisplayPage, sinon App
-  App.tsx               — routing (setup/tournament/tables/history) + fond thématique
-  index.css             — @theme Tailwind + CSS variables thèmes + animations
+  main.tsx              — entry point. Si ?display → DisplayPage (écran TV), sinon App. Lance initTimerLoop()
+  App.tsx               — routing (setup/tournament/tables/history)
+  index.css             — base + animations (transitions de niveau, écran TV)
+  styles/tokens.css     — DESIGN TOKENS (couleurs clair/sombre, jetons, rayons, ombres, num-display)
+  timer.ts / timerWorker.ts — timer singleton hors React ; rattrape le temps écoulé via lastTickAt
 
-  contexts/
-    ThemeContext.tsx     — ThemeProvider, useTheme(), THEMES, THEME_LABELS
-                          Thèmes : 'default' (Poker Night) | 'supercell' (CoC/CR)
-                          Stocké dans localStorage 'poker-theme'
-                          Applique data-theme sur <html>, synchro storage events (TV display)
+  contexts/ColorSchemeContext.tsx — 'system' | 'light' | 'dark', clé localStorage 'blindr-scheme', pose data-scheme sur <html>
 
   components/
-    Navigation.tsx       — nav bar + sélecteur de thème (icône Palette)
-    ui/CRButton.tsx      — bouton (variants: gold/blue/red/green/ghost), border-radius via --theme-btn-radius
-    ui/CRCard.tsx        — carte (prop gold= → .card-gold-glow), classe .cr-card-bg (texture)
-    ui/CRInput.tsx       — input stylisé
-    ui/CRBadge.tsx       — badge (variants: gold/blue/red/green/purple)
-    BlindStructureEditor.tsx
-    PrizePoolSetupCard.tsx
-    EndTournamentOverlay.tsx
+    Navigation.tsx       — barre de nav + sélecteur d'apparence
+    ui/Button.tsx        — variants primary/secondary/danger/success/ghost
+    ui/Card.tsx          — prop highlight= (liseré accent)
+    ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
+    BlindStructureEditor, PrizePoolSetupCard, EndTournamentOverlay, LevelTransitionOverlay
 
-  pages/
-    SetupPage.tsx        — config tournoi, joueurs, blindes, prize pool
-    TournamentPage.tsx   — timer live, niveaux, éliminations
-    TablesPage.tsx       — assignation des tables
-    HistoryPage.tsx      — historique des tournois
-    DisplayPage.tsx      — écran TV (?display). Theme-aware :
-                            default = fond feutre vert + ♠ watermark
-                            supercell = arena1.jpg + overlay chaud
-
-  store/
-    tournamentStore.ts   — Zustand, clé localStorage 'poker-tournament-state'
-    historyStore.ts      — Zustand, clé localStorage 'poker-history-state'
-
-  hooks/useTimer.ts      — timer avec correction de dérive
-  utils/prizePool.ts     — calcul prize pool (auto/paliers/manual)
-  types.ts               — tous les types TypeScript
-  constants.ts           — defaultBlindStructure, formatChips(), formatTime()
+  pages/  SetupPage, TournamentPage, TablesPage, HistoryPage, DisplayPage (?display, synchro via storage events)
+  store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1)
+  utils/  prizePool.ts, tournamentEstimator.ts, chips.ts (levelChip)
+  constants.ts — DEFAULT_BLIND_STRUCTURE, formatChips() (exact sous 100 000), formatTime()
+public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 ```
 
-### Système de thèmes
-- CSS variables définies dans `@theme {}` (valeurs par défaut)
-- Surchargées dans `[data-theme="supercell"] {}` au runtime
-- Classes Tailwind `bg-cr-gold`, `text-cr-blue-mid`, etc. réagissent automatiquement
-- Variables clés : `--color-cr-gold`, `--color-cr-blue-mid`, `--color-cr-card`, `--color-cr-darker`, `--color-cr-card-border`
-- Variables extra (hors Tailwind) : `--theme-heading-font`, `--theme-overlay-color`, `--theme-gold-glow`, `--theme-btn-radius`
-- Supercell : font Lilita One, buttons pill (radius 9999px), palette chaude orange/brun
-- **NE PAS** utiliser de hex hardcodés dans les nouveaux composants — utiliser `bg-cr-gold` etc.
+### Design system (direction « Jeton »)
+- Classes sémantiques uniquement : `bg-canvas`, `bg-surface`, `bg-sunken`, `border-line`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-accent`, `text-on-accent`, `text-danger`, `text-success`, `bg-chip-<1|5|10|25|100|500|1000|5000>`
+- **Accent = couleur du jeton du niveau** : `<div data-chip={levelChip(level)}>` recolore tout le contenu. Par défaut : vert (chip-25).
+- Chiffres : `num-display` (Archivo condensée, tabulaire) pour le timer et les gros nombres, `num` pour les chiffres en ligne. Titres : `font-display`.
+- Rayons : `rounded-control`, `rounded-card`, `rounded-sheet`. Ombres : `shadow-raised`, `shadow-sheet`.
+- **NE PAS** écrire de couleur hex/rgba dans les composants ; dans un `style`, utiliser `var(--color-…)`.
+- Hauteurs plein écran : `min-h-dvh` (jamais `100vh`/`min-h-screen`).
 
-### Conventions importantes
-- Composants UI préfixés `CR*` (CRButton, CRCard, etc.)
+### Conventions
 - Pages reçoivent `onNavigate: (page: Page) => void`
-- `DisplayPage` se synchronise avec la fenêtre principale via `storage` events localStorage
-- Assets arènes : `/public/arenas/arena1.jpg` (seul fichier existant pour l'instant)
-- Pas de tests automatisés — vérifier manuellement avec `npm run build` puis `npm run dev`
+- Vérifier avec `npm test`, `npm run build`, puis `npm run dev`
 
 ---
 

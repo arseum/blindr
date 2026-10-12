@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import {ChevronRight, ClipboardList, Plus, Settings, Spade, Trash2, UserPlus, Users, Zap} from 'lucide-react';
-import {CRCard} from '../components/ui/CRCard';
-import {CRButton} from '../components/ui/CRButton';
-import {CRInput} from '../components/ui/CRInput';
+import {Card} from '../components/ui/Card';
+import {Button} from '../components/ui/Button';
+import {Input} from '../components/ui/Input';
 import {PrizePoolSetupCard} from '../components/PrizePoolSetupCard';
 import {BlindStructureEditor} from '../components/BlindStructureEditor';
 import {useTournamentStore} from '../store/tournamentStore';
@@ -18,7 +18,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
     const {initTournament, tournament} = useTournamentStore();
 
     const [config, setConfig] = useState<TournamentConfig>({
-        name: 'Tournoi Clash Royale',
+        name: 'Tournoi du vendredi',
         buyIn: 20,
         startingStack: 10000,
         maxPlayersPerTable: 9,
@@ -74,70 +74,67 @@ export function SetupPage({onNavigate}: SetupPageProps) {
 
     if (showResumePrompt && tournament) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-6">
-                <CRCard gold className="max-w-md w-full text-center">
-                    <Spade size={48} className="text-cr-gold mx-auto mb-4"/>
-                    <h2 className="font-cinzel text-2xl font-bold text-cr-gold mb-2">Tournoi en cours</h2>
-                    <p className="text-[#8888a0] mb-2">{tournament.config.name}</p>
-                    <p className="text-[#e8e8e8] mb-6">
+            <div className="min-h-dvh flex items-center justify-center p-6">
+                <Card highlight className="max-w-md w-full text-center">
+                    <Spade size={48} className="text-accent mx-auto mb-4"/>
+                    <h2 className="font-display text-2xl font-bold text-accent mb-2">Tournoi en cours</h2>
+                    <p className="text-ink-muted mb-2">{tournament.config.name}</p>
+                    <p className="text-ink mb-6">
                         {tournament.players.filter(p => !p.isEliminated).length} joueurs restants —{' '}
                         Niveau {tournament.currentLevelIndex + 1}
                     </p>
                     <div className="flex flex-col gap-3">
-                        <CRButton variant="gold" size="lg" onClick={() => {
+                        <Button variant="primary" size="lg" onClick={() => {
                             setShowResumePrompt(false);
                             onNavigate('tournament');
                         }}>
                             Reprendre le tournoi
-                        </CRButton>
-                        <CRButton variant="ghost" onClick={() => setShowResumePrompt(false)}>
+                        </Button>
+                        <Button variant="ghost" onClick={() => setShowResumePrompt(false)}>
                             Nouveau tournoi
-                        </CRButton>
+                        </Button>
                     </div>
-                </CRCard>
+                </Card>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen p-4 md:p-8">
+        <div className="min-h-dvh p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center gap-4 mb-2">
-                        <span className="cr-supercell-only"><img src="/clash_royal_todo/tournament_icon.webp" alt=""
-                                                                 className="w-14 h-14 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"/></span>
-                        <h1 className="font-cinzel text-2xl sm:text-4xl md:text-5xl font-black text-cr-gold drop-shadow-[0_0_30px_rgba(244,200,66,0.5)]">
-                            POKER ROYALE
+                        <img src="/favicon.svg" alt="" className="w-12 h-12" />
+                        <h1 className="font-display text-5xl sm:text-6xl text-ink">
+                            blindr
                         </h1>
-                        <span className="cr-supercell-only"><img src="/clash_royal_todo/tournament_icon.webp" alt=""
-                                                                 className="w-14 h-14 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] scale-x-[-1]"/></span>
                     </div>
-                    <p className="text-cr-blue-light tracking-widest text-sm uppercase">Configuration du tournoi</p>
+                    <p className="text-ink-muted tracking-widest text-sm uppercase">Configuration du tournoi</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>*]:min-w-0">
                     {/* Config card */}
-                    <CRCard>
-                        <h2 className="font-cinzel text-lg font-bold text-cr-gold mb-4 flex items-center gap-2">
-                            <Settings size={18} className="text-cr-blue-light"/> Configuration
+                    <Card>
+                        <h2 className="font-display text-lg font-bold text-accent mb-4 flex items-center gap-2">
+                            <Settings size={18} className="text-ink-muted"/> Configuration
                         </h2>
                         <div className="flex flex-col gap-4">
-                            <CRInput
+                            <Input
                                 label="Nom du tournoi"
                                 value={config.name}
                                 onChange={e => setConfig(c => ({...c, name: e.target.value}))}
                                 placeholder="Mon super tournoi"
                             />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <CRInput
+                                <Input
                                     label="Buy-in (€)"
                                     type="number"
                                     value={config.buyIn}
                                     onChange={e => setConfig(c => ({...c, buyIn: Number(e.target.value)}))}
                                     min={0}
                                 />
-                                <CRInput
+                                <Input
                                     label="Stack de départ"
                                     type="number"
                                     value={config.startingStack}
@@ -146,7 +143,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                     step={500}
                                 />
                             </div>
-                            <CRInput
+                            <Input
                                 label="Joueurs max par table"
                                 type="number"
                                 value={config.maxPlayersPerTable}
@@ -154,7 +151,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                 min={2}
                                 max={10}
                             />
-                            <CRInput
+                            <Input
                                 label="Plus petit jeton"
                                 type="number"
                                 value={config.smallestChip}
@@ -165,7 +162,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                 min={1}
                             />
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm text-[#8888a0] font-medium">Re-entry</label>
+                                <label className="text-sm text-ink-muted font-medium">Re-entry</label>
                                 <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
@@ -175,15 +172,15 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                             ...c,
                                             reEntry: e.target.checked ? {maxLevel: 4, maxPerPlayer: 1} : null,
                                         }))}
-                                        className="accent-[#f4c842] cursor-pointer w-4 h-4"
+                                        className="accent-accent cursor-pointer w-4 h-4"
                                     />
-                                    <label htmlFor="reentry-toggle" className="text-sm text-[#e8e8e8] cursor-pointer">
+                                    <label htmlFor="reentry-toggle" className="text-sm text-ink cursor-pointer">
                                         Autoriser le re-entry
                                     </label>
                                 </div>
                                 {config.reEntry && (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-1">
-                                        <CRInput
+                                        <Input
                                             label="Jusqu'au niveau"
                                             type="number"
                                             value={config.reEntry.maxLevel}
@@ -197,7 +194,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                             min={1}
                                             max={config.blindStructure.length}
                                         />
-                                        <CRInput
+                                        <Input
                                             label="Max par joueur (0=∞)"
                                             type="number"
                                             value={config.reEntry.maxPerPlayer}
@@ -214,18 +211,18 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                 )}
                             </div>
                         </div>
-                    </CRCard>
+                    </Card>
 
                     {/* Players card */}
-                    <CRCard>
+                    <Card>
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-cinzel text-lg font-bold text-cr-gold flex items-center gap-2">
+                            <h2 className="font-display text-lg font-bold text-accent flex items-center gap-2">
                                 <Users size={20}/> Joueurs ({validPlayers.length})
                             </h2>
                             {playerNames.length > 2 && (
                                 <button
                                     onClick={clearPlayers}
-                                    className="text-[#525265] hover:text-cr-red text-xs transition-colors flex items-center gap-1"
+                                    className="text-ink-faint hover:text-danger text-xs transition-colors flex items-center gap-1"
                                     title="Vider la liste"
                                 >
                                     <Trash2 size={13}/> Tout effacer
@@ -234,38 +231,38 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                         </div>
 
                         {/* Ajout en masse — inline, sans boîte */}
-                        <div className="flex gap-2 items-center mb-1 pb-3 border-b border-cr-card-border/50">
-                            <UserPlus size={15} className="text-cr-blue-light flex-shrink-0"/>
-                            <span className="text-[#8888a0] text-sm flex-shrink-0">Ajouter</span>
+                        <div className="flex gap-2 items-center mb-1 pb-3 border-b border-line/50">
+                            <UserPlus size={15} className="text-ink-muted flex-shrink-0"/>
+                            <span className="text-ink-muted text-sm flex-shrink-0">Ajouter</span>
                             <input
                                 type="number"
                                 value={bulkCount}
                                 onChange={e => setBulkCount(Math.max(1, Math.min(50, Number(e.target.value))))}
-                                className="w-14 bg-cr-darker border border-cr-card-border rounded px-2 py-1 text-white text-sm text-center focus:outline-none focus:border-cr-gold"
+                                className="w-14 bg-sunken border border-line rounded px-2 py-1 text-ink text-sm text-center focus:outline-none focus:border-accent"
                                 min={1}
                                 max={50}
                             />
-                            <span className="text-[#8888a0] text-sm flex-shrink-0">joueurs</span>
-                            <CRButton
+                            <span className="text-ink-muted text-sm flex-shrink-0">joueurs</span>
+                            <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={addBulkPlayers}
                                 className="ml-auto flex-shrink-0"
                             >
                                 Ajouter
-                            </CRButton>
+                            </Button>
                         </div>
 
                         {/* Liste joueurs — rows plates */}
                         <div className="flex flex-col overflow-y-auto" style={{maxHeight: '16rem'}}>
                             {playerNames.map((name, idx) => (
                                 <div key={idx}
-                                     className="flex items-center border-b border-cr-card-border/30 last:border-0 flex-shrink-0"
+                                     className="flex items-center border-b border-line/30 last:border-0 flex-shrink-0"
                                      style={{minHeight: '2.5rem'}}>
                                     <span
-                                        className="text-[#525265] text-xs w-6 text-right pr-2 flex-shrink-0">{idx + 1}</span>
+                                        className="text-ink-faint text-xs w-6 text-right pr-2 flex-shrink-0">{idx + 1}</span>
                                     <input
-                                        className="flex-1 bg-transparent py-2 text-[#e8e8e8] placeholder-[#4a5568] text-sm focus:outline-none min-w-0"
+                                        className="flex-1 bg-transparent py-2 text-ink placeholder-ink-faint text-sm focus:outline-none min-w-0"
                                         placeholder={`Joueur ${idx + 1}`}
                                         value={name}
                                         onChange={e => updatePlayer(idx, e.target.value)}
@@ -273,7 +270,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                     {playerNames.length > 2 && (
                                         <button
                                             onClick={() => removePlayer(idx)}
-                                            className="text-[#525265] hover:text-cr-red transition-colors px-2 flex items-center flex-shrink-0"
+                                            className="text-ink-faint hover:text-danger transition-colors px-2 flex items-center flex-shrink-0"
                                         >
                                             <Trash2 size={13}/>
                                         </button>
@@ -281,15 +278,15 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                 </div>
                             ))}
                         </div>
-                        <CRButton
+                        <Button
                             variant="ghost"
                             size="sm"
                             onClick={addPlayer}
                             className="mt-3 w-full flex items-center justify-center gap-1"
                         >
                             <Plus size={16}/> Ajouter un joueur
-                        </CRButton>
-                    </CRCard>
+                        </Button>
+                    </Card>
 
                     {/* Prize pool setup */}
                     <div className="md:col-span-2">
@@ -302,15 +299,15 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                     </div>
 
                     {/* Blind structure editor */}
-                    <CRCard className="md:col-span-2">
+                    <Card className="md:col-span-2">
                         <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-                            <h2 className="font-cinzel text-lg font-bold text-cr-gold flex items-center gap-2">
-                                <ClipboardList size={18} className="text-cr-blue-light"/> Structure des blindes
+                            <h2 className="font-display text-lg font-bold text-accent flex items-center gap-2">
+                                <ClipboardList size={18} className="text-ink-muted"/> Structure des blindes
                             </h2>
                             <div className="flex items-center gap-2 ml-auto flex-wrap justify-end">
                                 {autoCalcState === 'input' && (
                                     <>
-                                        <span className="text-[#8888a0] text-sm flex-shrink-0">Durée totale</span>
+                                        <span className="text-ink-muted text-sm flex-shrink-0">Durée totale</span>
                                         <input
                                             type="number"
                                             value={targetHours}
@@ -318,12 +315,12 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                             min={0.5}
                                             max={12}
                                             step={0.5}
-                                            className="w-20 bg-cr-card border border-cr-card-border rounded px-2 py-1.5 text-[#e0ddd8] text-sm text-center focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold/20"
+                                            className="w-20 bg-surface border border-line rounded px-2 py-1.5 text-ink text-sm text-center focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                                             placeholder="3"
                                             autoFocus
                                         />
-                                        <span className="text-[#8888a0] text-sm flex-shrink-0">h</span>
-                                        <span className="text-[#8888a0] text-sm flex-shrink-0">·</span>
+                                        <span className="text-ink-muted text-sm flex-shrink-0">h</span>
+                                        <span className="text-ink-muted text-sm flex-shrink-0">·</span>
                                         <input
                                             type="number"
                                             value={targetLevelMinutes}
@@ -331,17 +328,16 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                             min={5}
                                             max={60}
                                             step={5}
-                                            className="w-20 bg-cr-card border border-cr-card-border rounded px-2 py-1.5 text-[#e0ddd8] text-sm text-center focus:outline-none focus:border-cr-gold focus:ring-1 focus:ring-cr-gold/20"
+                                            className="w-20 bg-surface border border-line rounded px-2 py-1.5 text-ink text-sm text-center focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                                             placeholder="20"
                                         />
-                                        <span className="text-[#8888a0] text-sm flex-shrink-0">min/niv.</span>
-                                        <CRButton variant="gold" size="sm" onClick={handleAutoCalcGo}>
+                                        <span className="text-ink-muted text-sm flex-shrink-0">min/niv.</span>
+                                        <Button variant="primary" size="sm" onClick={handleAutoCalcGo}>
                                             Go
-                                        </CRButton>
+                                        </Button>
                                         <button
                                             onClick={() => setAutoCalcState('idle')}
-                                            data-variant="ghost"
-                                            className="cr-btn text-[#525265] hover:text-cr-red transition-colors text-lg leading-none px-2 py-1"
+                                            className="text-ink-faint hover:text-danger transition-colors text-lg leading-none px-2 py-1"
                                             title="Annuler"
                                         >
                                             ✕
@@ -349,10 +345,10 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                     </>
                                 )}
                                 {autoCalcState !== 'input' && (
-                                    <CRButton variant="blue" size="sm" onClick={() => setAutoCalcState('input')}
+                                    <Button variant="secondary" size="sm" onClick={() => setAutoCalcState('input')}
                                               className="flex items-center gap-1.5">
                                         <Zap size={14}/> Auto-calcul
-                                    </CRButton>
+                                    </Button>
                                 )}
                             </div>
                         </div>
@@ -360,14 +356,14 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                         {autoCalcState === 'loading' ? (
                             <div className="flex flex-col items-center justify-center py-16 gap-5">
                                 <div className="relative w-16 h-16">
-                                    <div className="absolute inset-0 rounded-full border-4 border-cr-gold/15"/>
+                                    <div className="absolute inset-0 rounded-full border-4 border-accent/15"/>
                                     <div
-                                        className="absolute inset-0 rounded-full border-4 border-t-[#f4c842] border-r-transparent border-b-transparent border-l-transparent animate-spin"/>
+                                        className="absolute inset-0 rounded-full border-4 border-t-accent border-r-transparent border-b-transparent border-l-transparent animate-spin"/>
                                     <div className="absolute inset-0 flex items-center justify-center"><Spade size={20}
-                                                                                                              className="text-cr-gold"/>
+                                                                                                              className="text-accent"/>
                                     </div>
                                 </div>
-                                <p className="text-cr-blue-light text-sm tracking-[0.2em] uppercase animate-pulse">
+                                <p className="text-ink-muted text-sm tracking-[0.2em] uppercase animate-pulse">
                                     Calcul en cours…
                                 </p>
                             </div>
@@ -382,20 +378,20 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                                 reEntry={config.reEntry}
                             />
                         )}
-                    </CRCard>
+                    </Card>
                 </div>
 
                 {/* Start button */}
                 <div className="mt-8 flex justify-center">
-                    <CRButton
-                        variant="gold"
+                    <Button
+                        variant="primary"
                         size="lg"
                         onClick={handleStart}
                         disabled={!canStart}
                         className="flex items-center gap-3 text-xl px-12"
                     >
                         Lancer le tournoi <ChevronRight size={24}/>
-                    </CRButton>
+                    </Button>
                 </div>
             </div>
         </div>

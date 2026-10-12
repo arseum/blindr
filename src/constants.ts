@@ -34,23 +34,17 @@ export const DEFAULT_BLIND_STRUCTURE: BlindLevel[] = [
   { level: 20, smallBlind: 8000, bigBlind: 16000, ante: 2000, duration: 20 },
 ];
 
-export const TV_BG_KEY     = 'poker-tv-bg';
 export const TV_EFFECT_KEY = 'poker-tv-effect';
 
-export const ARENA_BACKGROUNDS: { label: string; path: string }[] = [
-  { label: 'Arène Classique',  path: '/arenas/arene_classique.jpg' },
-  { label: 'Arène Légendaire', path: '/arenas/arene_legendaire.jpg' },
-  { label: 'Boule de Feu',     path: '/arenas/boule_de_feu.jpg' },
-  { label: 'Ballon Géant',     path: '/arenas/ballon_geant.jpg' },
-  { label: 'Fond Montagne',    path: '/arenas/fond_montagne.webp' },
-];
-
-export const DEFAULT_TV_BG = ARENA_BACKGROUNDS[0].path;
-
+/**
+ * Montant de jetons lisible et exact : 1 150 → « 1 150 », 125 000 → « 125K », 1 250 000 → « 1,25M ».
+ * Sous 100 000, on affiche la valeur exacte : une blinde arrondie serait fausse.
+ */
+const chipsFormatter = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
 export const formatChips = (amount: number): string => {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`;
-  return amount.toString();
+  if (amount >= 1_000_000) return `${chipsFormatter.format(amount / 1_000_000)}M`;
+  if (amount >= 100_000) return `${chipsFormatter.format(amount / 1_000)}K`;
+  return chipsFormatter.format(amount);
 };
 
 export const formatTime = (seconds: number): string => {

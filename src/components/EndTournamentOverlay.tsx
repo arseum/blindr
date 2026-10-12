@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
-import { CRButton } from './ui/CRButton';
-import { useTheme } from '../contexts/ThemeContext';
+import { Button } from './ui/Button';
 import { calculatePrizes } from '../utils/prizePool';
 import type { Player, TournamentState } from '../types';
 
@@ -11,12 +10,9 @@ interface EndTournamentOverlayProps {
 }
 
 const MEDAL  = ['#1', '#2', '#3'];
-const COLORS = ['text-[#f4c842]', 'text-[#a0aec0]', 'text-[#cd7f32]'];
-const GLOW   = [
-  'shadow-[0_0_40px_rgba(244,200,66,0.6)] border-[#f4c842]',
-  'shadow-[0_0_20px_rgba(160,174,192,0.4)] border-[#a0aec0]',
-  'shadow-[0_0_20px_rgba(205,127,50,0.4)] border-[#cd7f32]',
-];
+const COLORS = ['text-chip-1000', 'text-chip-1', 'text-chip-5000'];
+const BORDER = ['border-chip-1000', 'border-chip-1', 'border-chip-5000'];
+const BLOCK  = ['h-16 bg-chip-1000/15', 'h-10 bg-chip-1/12', 'h-6 bg-chip-5000/12'];
 const SIZES  = ['text-7xl md:text-8xl', 'text-5xl md:text-6xl', 'text-4xl md:text-5xl'];
 const ORDER  = [1, 0, 2]; // 2nd / 1st / 3rd pour l'effet podium
 
@@ -30,24 +26,7 @@ function buildPodium(tournament: TournamentState): Player[] {
   return [winner, eliminated[0], eliminated[1]].filter(Boolean) as Player[];
 }
 
-// Particules dorées pour le thème supercell
-const PARTICLES = [
-  { left: '10%', delay: '0s',    size: 6,  dur: '2.8s' },
-  { left: '20%', delay: '0.4s',  size: 4,  dur: '3.2s' },
-  { left: '33%', delay: '0.8s',  size: 8,  dur: '2.5s' },
-  { left: '45%', delay: '0.2s',  size: 5,  dur: '3.5s' },
-  { left: '58%', delay: '1.0s',  size: 6,  dur: '2.9s' },
-  { left: '70%', delay: '0.6s',  size: 4,  dur: '3.1s' },
-  { left: '80%', delay: '0.3s',  size: 7,  dur: '2.7s' },
-  { left: '90%', delay: '1.2s',  size: 5,  dur: '3.3s' },
-  { left: '15%', delay: '1.5s',  size: 4,  dur: '2.6s' },
-  { left: '62%', delay: '0.9s',  size: 6,  dur: '3.0s' },
-  { left: '38%', delay: '1.7s',  size: 3,  dur: '2.8s' },
-  { left: '75%', delay: '1.3s',  size: 5,  dur: '3.4s' },
-];
-
 export function EndTournamentOverlay({ tournament, onClose }: EndTournamentOverlayProps) {
-  const { theme } = useTheme();
   const [visible,  setVisible]  = useState(false);
   const [revealed, setRevealed] = useState<number[]>([]);
 
@@ -69,50 +48,16 @@ export function EndTournamentOverlay({ tournament, onClose }: EndTournamentOverl
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const isSupercell = theme === 'supercell';
-
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-sm transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
-      style={{ background: isSupercell ? 'rgba(15,5,0,0.92)' : 'rgba(7,15,24,0.95)' }}
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-canvas/95 backdrop-blur-sm transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
-      {/* Arrière-plan : particules supercell ou glow default */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {isSupercell ? (
-          PARTICLES.map((p, i) => (
-            <div
-              key={i}
-              className="absolute bottom-0 rounded-full"
-              style={{
-                left: p.left,
-                width:  p.size,
-                height: p.size,
-                background: i % 3 === 0 ? '#ffd700' : i % 3 === 1 ? '#ff9a3c' : '#ff6600',
-                animation: `floatParticle ${p.dur} ${p.delay} ease-out infinite`,
-              }}
-            />
-          ))
-        ) : (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#f4c842]/5 blur-3xl animate-pulse" />
-        )}
-      </div>
-
-      <Trophy
-        size={48}
-        className="mb-2 animate-bounce"
-        style={{ color: isSupercell ? '#ffd700' : '#f4c842' }}
-      />
-      <h1
-        className="font-cinzel text-3xl md:text-5xl font-black mb-1 text-center"
-        style={{
-          color: isSupercell ? '#ffd700' : '#f4c842',
-          textShadow: `0 0 30px ${isSupercell ? 'rgba(255,215,0,0.7)' : 'rgba(244,200,66,0.7)'}`,
-        }}
-      >
-        TOURNOI TERMINÉ
+      <Trophy size={48} className="mb-2 text-chip-1000 motion-safe:animate-bounce" />
+      <h1 className="font-display text-4xl md:text-6xl font-extrabold mb-1 text-center text-ink">
+        Tournoi terminé
       </h1>
-      <p className="text-sm mb-10 tracking-widest uppercase" style={{ color: isSupercell ? '#ff9a3c' : '#4a8fd4' }}>
-        {tournament.config.name} · {durationMin}min · {totalPot}€
+      <p className="text-sm mb-10 text-ink-muted num">
+        {tournament.config.name} · {durationMin} min · {totalPot} €
       </p>
 
       {/* Podium — ordre visuel : 2ème / 1er / 3ème */}
@@ -134,54 +79,33 @@ export function EndTournamentOverlay({ tournament, onClose }: EndTournamentOverl
               }}
               className="flex flex-col items-center"
             >
-              <div className={`font-cinzel font-bold text-2xl mb-2 ${COLORS[rankIdx]}`}>{MEDAL[rankIdx]}</div>
+              <div className={`font-display font-bold text-2xl mb-2 ${COLORS[rankIdx]}`}>{MEDAL[rankIdx]}</div>
               <div
-                className={`border-2 rounded-2xl px-4 py-4 md:px-6 text-center ${GLOW[rankIdx]}`}
-                style={{
-                  minWidth: rankIdx === 0 ? 140 : 110,
-                  background: isSupercell ? 'rgba(45,21,0,0.9)' : '#1a2d4a',
-                }}
+                className={`border-2 rounded-card bg-surface shadow-raised px-4 py-4 md:px-6 text-center ${BORDER[rankIdx]}`}
+                style={{ minWidth: rankIdx === 0 ? 140 : 110 }}
               >
-                <div className={`font-cinzel font-black ${SIZES[rankIdx]} ${COLORS[rankIdx]} leading-none mb-1`}>
+                <div className={`font-display font-black ${SIZES[rankIdx]} ${COLORS[rankIdx]} leading-none mb-1`}>
                   #{rankIdx + 1}
                 </div>
-                <div className="text-white font-bold text-sm md:text-base truncate max-w-[120px]">
+                <div className="text-ink font-bold text-sm md:text-base truncate max-w-[120px]">
                   {player.name}
                 </div>
                 {prize > 0 && (
-                  <div
-                    className="text-sm font-bold mt-1"
-                    style={{ color: isSupercell ? '#ffd700' : '#27ae60' }}
-                  >
-                    {prize}€
+                  <div className="text-sm font-bold mt-1 text-success num">
+                    {prize} €
                   </div>
                 )}
               </div>
               {/* Bloc podium */}
-              <div
-                className={`w-full rounded-b-xl ${
-                  rankIdx === 0
-                    ? 'h-16 border-x-2 border-b-2 border-[#f4c842]'
-                    : rankIdx === 1
-                    ? 'h-10 border-x-2 border-b-2 border-[#a0aec0]'
-                    : 'h-6 border-x-2 border-b-2 border-[#cd7f32]'
-                }`}
-                style={{
-                  background: rankIdx === 0
-                    ? 'rgba(244,200,66,0.20)'
-                    : rankIdx === 1
-                    ? 'rgba(160,174,192,0.10)'
-                    : 'rgba(205,127,50,0.10)',
-                }}
-              />
+              <div className={`w-full rounded-b-card border-x-2 border-b-2 ${BORDER[rankIdx]} ${BLOCK[rankIdx]}`} />
             </div>
           );
         })}
       </div>
 
-      <CRButton variant="gold" size="lg" onClick={onClose} className="text-lg px-12">
+      <Button variant="primary" size="lg" onClick={onClose} className="text-lg px-12">
         Clôturer le tournoi
-      </CRButton>
+      </Button>
     </div>
   );
 }

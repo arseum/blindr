@@ -12,7 +12,7 @@ interface TournamentStore {
   prevLevel: () => void;
   startTimer: () => void;
   pauseTimer: () => void;
-  tickTimer: (seconds?: number) => void;
+  tickTimer: (seconds: number, at: number) => void;
   resetTimer: () => void;
   updateSecondsRemaining: (seconds: number) => void;
   redistributeTables: () => void;
@@ -78,6 +78,7 @@ export const useTournamentStore = create<TournamentStore>()(
             isPaused: false,
             isEnded: false,
             startedAt: null,
+            lastTickAt: null,
             rebuyCount: 0,
           }
         });
@@ -170,6 +171,7 @@ export const useTournamentStore = create<TournamentStore>()(
             isRunning: true,
             isPaused: false,
             startedAt: state.tournament.startedAt ?? Date.now(),
+            lastTickAt: Date.now(),
           }
         };
       }),
@@ -181,7 +183,7 @@ export const useTournamentStore = create<TournamentStore>()(
         };
       }),
 
-      tickTimer: (seconds = 1) => set(state => {
+      tickTimer: (seconds, at) => set(state => {
         if (!state.tournament || !state.tournament.isRunning) return state;
         const { blindStructure } = state.tournament.config;
         let remaining = state.tournament.secondsRemaining - seconds;
@@ -201,6 +203,7 @@ export const useTournamentStore = create<TournamentStore>()(
               currentLevelIndex: levelIdx,
               secondsRemaining: 0,
               isRunning: false,
+              lastTickAt: at,
             }
           };
         }
@@ -210,6 +213,7 @@ export const useTournamentStore = create<TournamentStore>()(
             ...state.tournament,
             currentLevelIndex: levelIdx,
             secondsRemaining: remaining,
+            lastTickAt: at,
           }
         };
       }),
@@ -303,6 +307,15 @@ export const useTournamentStore = create<TournamentStore>()(
     }),
     {
       name: 'poker-tournament-state',
+      version: 1,
+      migrate: (persisted, version) => {
+        const state = persisted as { tournament: TournamentState | null };
+        // v0 → v1 : ajout de lastTickAt
+        if (version < 1 && state.tournament) {
+          state.tournament = { ...state.tournament, lastTickAt: null };
+        }
+        return state as TournamentStore;
+      },
     }
   )
 );

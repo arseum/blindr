@@ -1,0 +1,116 @@
+/* ============================================================
+   BLINDR — design tokens (direction « Jeton »)
+   Clair par défaut, sombre via prefers-color-scheme ou data-scheme="dark".
+   Les composants n'utilisent QUE ces tokens (bg-canvas, text-ink, bg-accent…).
+   ============================================================ */
+
+@theme static {
+  /* Neutres — une seule famille, légèrement teintée vert-gris */
+  --color-canvas:    #f2f3ef;  /* fond d'écran */
+  --color-surface:   #ffffff;  /* cartes, panneaux */
+  --color-sunken:    #e8eae4;  /* champs, zones en creux */
+  --color-line:      #dcdfd8;  /* bordures, séparateurs */
+  --color-ink:       #131518;  /* texte principal */
+  --color-ink-muted: #5f645e;  /* texte secondaire (AA sur canvas) */
+  --color-ink-faint: #8d928b;  /* placeholders, éléments désactivés */
+
+  /* Accent — prend la couleur du jeton du niveau en cours (voir [data-chip]) */
+  --color-accent:    var(--color-chip-25);
+  --color-on-accent: #ffffff;
+
+  /* Sémantique */
+  --color-danger:    #b8332a;
+  --color-success:   #1d7a4c;
+
+  /* Jetons — couleurs de casino usuelles, ajustées pour le contraste sur fond clair */
+  --color-chip-1:    #5d6670;  /* blanc → ardoise (un jeton blanc ne se lit pas sur fond clair) */
+  --color-chip-5:    #c0392b;  /* rouge */
+  --color-chip-10:   #1f5fae;  /* bleu */
+  --color-chip-25:   #1d7a4c;  /* vert — couleur de marque */
+  --color-chip-100:  #1c1e21;  /* noir */
+  --color-chip-500:  #5b3f9e;  /* violet */
+  --color-chip-1000: #8f6400;  /* jaune → ocre */
+  --color-chip-5000: #a84a17;  /* orange */
+  --color-chip-break: var(--color-ink-muted);
+
+  /* Typo — Archivo seule, la largeur porte la hiérarchie */
+  --font-sans: 'Archivo Variable', system-ui, -apple-system, sans-serif;
+
+  /* Rayons — plutôt carrés, comme une affiche */
+  --radius-control: 8px;   /* boutons, champs */
+  --radius-card:    12px;  /* cartes, panneaux */
+  --radius-sheet:   20px;  /* bottom sheets, modales */
+
+  /* Ombres teintées encre, jamais de noir pur */
+  --shadow-raised: 0 1px 2px rgb(19 21 24 / 0.06), 0 10px 24px -14px rgb(19 21 24 / 0.22);
+  --shadow-sheet:  0 -12px 40px -16px rgb(19 21 24 / 0.30);
+}
+
+/* ─── Mode sombre ─────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-scheme="light"]) {
+    --color-canvas:    #121416;
+    --color-surface:   #1b1e21;
+    --color-sunken:    #0d0f10;
+    --color-line:      #2b2f33;
+    --color-ink:       #eef0ec;
+    --color-ink-muted: #a1a69f;
+    --color-ink-faint: #6c716b;
+    --color-on-accent: #111315;
+    --color-danger:    #f0695b;
+    --color-success:   #4fc488;
+    --color-chip-1:    #aeb6bf;
+    --color-chip-5:    #f06a5a;
+    --color-chip-10:   #6aa3f0;
+    --color-chip-25:   #4fc488;
+    --color-chip-100:  #e6e7e3;  /* le noir devient ivoire sur fond sombre */
+    --color-chip-500:  #ab8de8;
+    --color-chip-1000: #e3b23c;
+    --color-chip-5000: #f08a4b;
+    color-scheme: dark;
+  }
+}
+:root[data-scheme="dark"] {
+  --color-canvas:    #121416;
+  --color-surface:   #1b1e21;
+  --color-sunken:    #0d0f10;
+  --color-line:      #2b2f33;
+  --color-ink:       #eef0ec;
+  --color-ink-muted: #a1a69f;
+  --color-ink-faint: #6c716b;
+  --color-on-accent: #111315;
+  --color-danger:    #f0695b;
+  --color-success:   #4fc488;
+  --color-chip-1:    #aeb6bf;
+  --color-chip-5:    #f06a5a;
+  --color-chip-10:   #6aa3f0;
+  --color-chip-25:   #4fc488;
+  --color-chip-100:  #e6e7e3;
+  --color-chip-500:  #ab8de8;
+  --color-chip-1000: #e3b23c;
+  --color-chip-5000: #f08a4b;
+  color-scheme: dark;
+}
+
+/* ─── Accent du niveau : <div data-chip="25"> recolore tout son contenu ─── */
+[data-chip="1"]     { --color-accent: var(--color-chip-1); }
+[data-chip="5"]     { --color-accent: var(--color-chip-5); }
+[data-chip="10"]    { --color-accent: var(--color-chip-10); }
+[data-chip="25"]    { --color-accent: var(--color-chip-25); }
+[data-chip="100"]   { --color-accent: var(--color-chip-100); }
+[data-chip="500"]   { --color-accent: var(--color-chip-500); }
+[data-chip="1000"]  { --color-accent: var(--color-chip-1000); }
+[data-chip="5000"]  { --color-accent: var(--color-chip-5000); }
+[data-chip="break"] { --color-accent: var(--color-chip-break); }
+
+/* ─── Chiffres : condensés, tabulaires, ne « tremblent » jamais ─── */
+@utility num-display {
+  font-weight: 800;
+  font-stretch: 62%;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+}
+@utility num {
+  font-variant-numeric: tabular-nums;
+}

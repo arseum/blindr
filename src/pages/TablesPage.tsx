@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeftRight, Users, AlertTriangle, Plus, X } from 'lucide-react';
-import { CRCard } from '../components/ui/CRCard';
-import { CRButton } from '../components/ui/CRButton';
-import { CRBadge } from '../components/ui/CRBadge';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
 import { useTournamentStore } from '../store/tournamentStore';
 import type { Page } from '../types';
 
@@ -16,11 +16,11 @@ export function TablesPage({ onNavigate }: TablesPageProps) {
 
   if (!tournament) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <CRCard>
-          <p className="text-[#a0aec0] mb-4">Aucun tournoi en cours</p>
-          <CRButton onClick={() => onNavigate('setup')}>Créer un tournoi</CRButton>
-        </CRCard>
+      <div className="min-h-dvh flex items-center justify-center">
+        <Card>
+          <p className="text-ink-muted mb-4">Aucun tournoi en cours</p>
+          <Button onClick={() => onNavigate('setup')}>Créer un tournoi</Button>
+        </Card>
       </div>
     );
   }
@@ -42,34 +42,34 @@ export function TablesPage({ onNavigate }: TablesPageProps) {
   }
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-dvh p-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="font-cinzel text-2xl sm:text-3xl font-bold text-cr-gold">Tables</h1>
-            <p className="text-cr-blue-light text-sm mt-1">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-accent">Tables</h1>
+            <p className="text-ink-muted text-sm mt-1">
               {activePlayers.length} joueurs — {tables.length} tables · glisser-déposer pour déplacer
             </p>
           </div>
           <div className="flex gap-3">
-            <CRButton
-              variant="green"
+            <Button
+              variant="success"
               onClick={addTable}
               className="flex items-center gap-2"
             >
               <Plus size={18} /> Ajouter table
-            </CRButton>
-            <CRButton
-              variant="blue"
+            </Button>
+            <Button
+              variant="secondary"
               onClick={redistributeTables}
               className="flex items-center gap-2"
             >
               <ArrowLeftRight size={18} /> Redistribuer
-            </CRButton>
-            <CRButton variant="ghost" onClick={() => onNavigate('tournament')}>
+            </Button>
+            <Button variant="ghost" onClick={() => onNavigate('tournament')}>
               ← Tournoi
-            </CRButton>
+            </Button>
           </div>
         </div>
 
@@ -93,41 +93,41 @@ export function TablesPage({ onNavigate }: TablesPageProps) {
                 onDrop={e => handleDrop(e, table.id)}
               >
                 {isEmpty ? (
-                  <div className={`rounded-xl border-2 border-dashed transition-all duration-150 flex flex-col items-center justify-center min-h-32 gap-2 ${isDragOver ? 'border-cr-gold/70 bg-cr-gold/5 scale-[1.02]' : 'border-cr-card-border/40'}`}>
-                    <h3 className="font-cinzel font-bold text-[#525265] text-base">{table.name}</h3>
-                    <p className="text-xs text-[#525265]">Glisser un joueur ici</p>
+                  <div className={`rounded-xl border-2 border-dashed transition-all duration-150 flex flex-col items-center justify-center min-h-32 gap-2 ${isDragOver ? 'border-accent/70 bg-accent/5 scale-[1.02]' : 'border-line/40'}`}>
+                    <h3 className="font-display font-bold text-ink-faint text-base">{table.name}</h3>
+                    <p className="text-xs text-ink-faint">Glisser un joueur ici</p>
                     <button
                       onClick={() => removeTable(table.id)}
-                      className="mt-1 text-[#525265] hover:text-cr-red transition-colors p-1 rounded"
+                      className="mt-1 text-ink-faint hover:text-danger transition-colors p-1 rounded"
                       title="Supprimer la table"
                     >
                       <X size={14} />
                     </button>
                   </div>
                 ) : (
-                  <CRCard
-                    gold={tablePlayers.length <= 3}
-                    className={`transition-all duration-150 ${isDragOver ? 'ring-2 ring-cr-gold/70 scale-[1.02]' : ''}`}
+                  <Card
+                    highlight={tablePlayers.length <= 3}
+                    className={`transition-all duration-150 ${isDragOver ? 'ring-2 ring-accent/70 scale-[1.02]' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-cinzel font-bold text-cr-gold text-lg">{table.name}</h3>
-                      <CRBadge variant={isFull ? 'red' : tablePlayers.length <= 4 ? 'gold' : 'green'}>
+                      <h3 className="font-display font-bold text-accent text-lg">{table.name}</h3>
+                      <Badge variant={isFull ? 'danger' : tablePlayers.length <= 4 ? 'accent' : 'success'}>
                         <Users size={12} className="mr-1" />
                         {tablePlayers.length}/{idealPerTable}
-                      </CRBadge>
+                      </Badge>
                     </div>
 
                     {/* Poker table visual */}
-                    <div className={`bg-[#0d1b2a] rounded-xl p-3 mb-3 transition-colors duration-150 ${isDragOver ? 'bg-[#1a3050]' : ''}`}>
+                    <div className={`bg-sunken rounded-xl p-3 mb-3 transition-colors duration-150 ${isDragOver ? 'bg-sunken' : ''}`}>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {tablePlayers.map(player => (
                           <div
                             key={player!.id}
                             draggable
                             onDragStart={e => handleDragStart(e, player!.id)}
-                            className="bg-[#2456a4]/30 border border-[#2456a4]/50 rounded-lg px-2 py-1.5 text-center cursor-grab active:cursor-grabbing active:opacity-50 hover:border-cr-gold/50 hover:bg-[#2456a4]/50 transition-colors select-none"
+                            className="bg-chip-10/30 border border-chip-10/50 rounded-lg px-2 py-1.5 text-center cursor-grab active:cursor-grabbing active:opacity-50 hover:border-accent/50 hover:bg-chip-10/50 transition-colors select-none"
                           >
-                            <span className="text-xs text-[#e8e8e8] font-medium truncate block">
+                            <span className="text-xs text-ink font-medium truncate block">
                               {player!.name}
                             </span>
                           </div>
@@ -136,11 +136,11 @@ export function TablesPage({ onNavigate }: TablesPageProps) {
                     </div>
 
                     {tablePlayers.length <= 3 && (
-                      <div className="flex items-center justify-center gap-1.5 text-xs text-cr-gold/70 font-cinzel tracking-wide">
+                      <div className="flex items-center justify-center gap-1.5 text-xs text-accent/70 font-display tracking-wide">
                         <AlertTriangle size={11} /> Table courte — redistribution conseillée
                       </div>
                     )}
-                  </CRCard>
+                  </Card>
                 )}
               </div>
             );
@@ -150,15 +150,15 @@ export function TablesPage({ onNavigate }: TablesPageProps) {
         {/* Eliminated players section */}
         {players.filter(p => p.isEliminated).length > 0 && (
           <div className="mt-6">
-            <h2 className="font-cinzel text-lg font-bold text-[#525265] mb-3">Joueurs éliminés</h2>
+            <h2 className="font-display text-lg font-bold text-ink-faint mb-3">Joueurs éliminés</h2>
             <div className="flex flex-wrap gap-2">
               {players
                 .filter(p => p.isEliminated)
                 .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
                 .map(player => (
-                  <div key={player.id} className="bg-[#1a2d4a]/50 border border-[#2a4a7a]/30 rounded-lg px-3 py-1.5 flex items-center gap-2">
-                    <span className="text-sm text-[#525265] line-through">{player.name}</span>
-                    {player.position && <CRBadge variant="red">{player.position}e</CRBadge>}
+                  <div key={player.id} className="bg-sunken/50 border border-ink-faint/30 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                    <span className="text-sm text-ink-faint line-through">{player.name}</span>
+                    {player.position && <Badge variant="danger">{player.position}e</Badge>}
                   </div>
                 ))}
             </div>

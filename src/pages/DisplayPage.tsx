@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { TV_SYNC_KEY } from '../timer';
-import { formatTime, formatChips, TV_BG_KEY, TV_EFFECT_KEY, DEFAULT_TV_BG } from '../constants';
+import { formatTime, formatChips, TV_EFFECT_KEY } from '../constants';
 import { calculatePrizes, getPaidPlaces, positionLabel } from '../utils/prizePool';
-import { useTheme } from '../contexts/ThemeContext';
+import { levelChip } from '../utils/chips';
 import { LevelTransitionOverlay } from '../components/LevelTransitionOverlay';
 import type { TransitionEffect } from '../components/LevelTransitionOverlay';
 import type { TournamentState, Player } from '../types';
@@ -17,17 +17,12 @@ function readInitialState(): TournamentState | null {
 
 export function DisplayPage() {
   const [tournament, setTournament] = useState<TournamentState | null>(readInitialState);
-  const [tvBg, setTvBg] = useState(() => localStorage.getItem(TV_BG_KEY) ?? DEFAULT_TV_BG);
   const [transition, setTransition] = useState<{ effect: TransitionEffect; label: string } | null>(null);
-  const { theme } = useTheme();
 
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === TV_SYNC_KEY && e.newValue) {
         try { setTournament(JSON.parse(e.newValue)); } catch { /* ignore */ }
-      }
-      if (e.key === TV_BG_KEY && e.newValue) {
-        setTvBg(e.newValue);
       }
       if (e.key === TV_EFFECT_KEY && e.newValue) {
         try {
@@ -40,8 +35,8 @@ export function DisplayPage() {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  if (!tournament) return <DisplayIdle theme={theme} tvBg={tvBg} />;
-  if (tournament.isEnded) return <EndScreenTV tournament={tournament} theme={theme} tvBg={tvBg} />;
+  if (!tournament) return <DisplayIdle />;
+  if (tournament.isEnded) return <EndScreenTV tournament={tournament} />;
 
   const { config, players, currentLevelIndex, secondsRemaining } = tournament;
   const currentLevel  = config.blindStructure[currentLevelIndex];
@@ -55,7 +50,6 @@ export function DisplayPage() {
   const paidPlaces    = getPaidPlaces(players.length, config.prizePool.itmPct);
   const levelProgress = 1 - secondsRemaining / (currentLevel.duration * 60);
   const isWarning     = secondsRemaining <= 60 && !currentLevel.isBreak;
-  const isSC          = theme === 'supercell';
 
   // Niveau de tremblement 0-6 progressif (monte toutes les ~10s sous la minute)
   const shakeLevel = isWarning ? Math.min(6, Math.floor((60 - secondsRemaining) / 10) + 1) : 0;
@@ -64,108 +58,59 @@ export function DisplayPage() {
     animation: `tv-shake-${shakeLevel} ${shakeDuration}ms ease-in-out infinite`,
   } : {};
 
-  const gold  = isSC ? '#f4c842' : '#f4c842';
-  const accent = isSC ? '#8899cc' : '#4a8fd4';
-
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div data-chip={levelChip(currentLevel)} className="min-h-dvh flex flex-col relative overflow-hidden bg-canvas text-ink">
       {transition && (
         <LevelTransitionOverlay
           effect={transition.effect}
           levelLabel={transition.label}
-          tvBg={tvBg}
           onDone={() => setTransition(null)}
         />
       )}
-      {/* Background */}
-      {isSC ? (
-        <>
-          <img
-            className="absolute inset-0 w-full h-full object-cover"
-            src={tvBg}
-            alt=""
-          />
-          <div className="absolute inset-0" style={{ background: 'rgba(10,16,32,0.35)' }} />
-          <div className="absolute inset-0" style={{
-            background: 'radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.50) 100%)',
-          }} />
-        </>
-      ) : (
-        <>
-          <div className="absolute inset-0" style={{
-            background: 'radial-gradient(ellipse at 50% 40%, #0a2010 0%, #041208 40%, #020a04 70%, #000 100%)',
-          }} />
-          <div className="absolute inset-0 opacity-[0.04]" style={{
-            backgroundImage: 'repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 8px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 8px)',
-          }} />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.03]">
-            <span style={{ fontSize: '60vw', lineHeight: 1, color: '#27ae60' }}>♠</span>
-          </div>
-        </>
-      )}
 
-      {/* Content */}
       <div
-        className={`relative z-10 flex flex-col min-h-screen${transition?.effect === 'radial' ? ' wave-active' : ''}`}
+        className={`relative z-10 flex flex-col min-h-dvh${transition?.effect === 'radial' ? ' wave-active' : ''}`}
         style={shakeStyle}
       >
-
         {/* Top bar */}
         <div data-wave="1" className="flex items-center justify-between px-4 sm:px-10 pt-4 sm:pt-7 pb-2 sm:pb-3 gap-2">
-          <div className="font-cinzel text-sm sm:text-xl lg:text-2xl font-bold tracking-widest uppercase truncate"
-            style={{ color: gold, opacity: 0.90, textShadow: '0 2px 0 rgba(0,0,0,0.7)' }}>
-            {isSC
-              ? <span className="flex items-center gap-2"><img src="/clash_royal_todo/tournament_icon.webp" alt="" className="w-5 h-5 sm:w-7 sm:h-7 object-contain inline-block" /> {config.name}</span>
-              : <>♠ {config.name}</>
-            }
+          <div className="text-sm sm:text-xl lg:text-2xl font-semibold text-ink-muted truncate">
+            {config.name}
           </div>
-          <div className="font-cinzel text-sm sm:text-xl lg:text-2xl font-bold tracking-widest flex-shrink-0"
-            style={{ color: accent, textShadow: '0 2px 0 rgba(0,0,0,0.7)' }}>
-            {currentLevel.isBreak ? '— PAUSE —' : `NIVEAU ${currentLevel.level}`}
+          <div className="font-display text-sm sm:text-xl lg:text-3xl font-extrabold uppercase text-accent flex-shrink-0">
+            {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
           </div>
         </div>
 
         {/* Center — Timer + Blinds */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-12 gap-3 sm:gap-6">
-
-          {/* Timer */}
           <div
             data-wave="0"
-            className={`font-cinzel font-black leading-none tracking-tight select-none transition-colors ${isWarning ? 'animate-pulse' : ''}`}
-            style={{
-              fontSize: 'clamp(5rem, 22vw, 20rem)',
-              color: isWarning ? '#e74c3c' : currentLevel.isBreak ? '#ffffff' : gold,
-              textShadow: isWarning
-                ? '0 0 60px rgba(231,76,60,0.6), 0 3px 0 rgba(0,0,0,0.8)'
-                : isSC
-                  ? '0 0 80px rgba(244,200,66,0.45), 0 4px 0 rgba(0,0,0,0.9)'
-                  : '0 0 60px rgba(244,200,66,0.35)',
-            }}
+            className={`num-display select-none transition-colors ${isWarning ? 'text-danger motion-safe:animate-pulse' : 'text-ink'}`}
+            style={{ fontSize: 'clamp(6rem, 28vw, 24rem)' }}
           >
             {formatTime(secondsRemaining)}
           </div>
 
-          {/* Blinds */}
           {!currentLevel.isBreak && (
             <div data-wave="2" className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 lg:gap-12">
-              <BlindBlock label="Petite blinde" value={formatChips(currentLevel.smallBlind)} isSC={isSC} />
-              <div className="text-4xl sm:text-7xl font-thin" style={{ color: accent }}>/</div>
-              <BlindBlock label="Grande blinde" value={formatChips(currentLevel.bigBlind)} isSC={isSC} />
+              <BlindBlock label="Petite blinde" value={formatChips(currentLevel.smallBlind)} />
+              <div className="text-4xl sm:text-7xl font-thin text-ink-faint">/</div>
+              <BlindBlock label="Grosse blinde" value={formatChips(currentLevel.bigBlind)} />
               {currentLevel.ante > 0 && (
                 <>
-                  <div className="text-4xl sm:text-7xl font-thin" style={{ color: accent }}>+</div>
-                  <BlindBlock label="Ante" value={formatChips(currentLevel.ante)} isSC={isSC} accent />
+                  <div className="text-4xl sm:text-7xl font-thin text-ink-faint">+</div>
+                  <BlindBlock label="Ante" value={formatChips(currentLevel.ante)} accent />
                 </>
               )}
             </div>
           )}
 
-          {/* Next level */}
           {nextLevel && (
-            <div data-wave="3" className="text-[#4a5568] text-xs sm:text-lg lg:text-xl font-cinzel tracking-wide text-center px-2">
-              Prochain →{' '}
+            <div data-wave="3" className="text-ink-muted text-xs sm:text-lg lg:text-xl text-center px-2 num">
+              Prochain niveau :{' '}
               {nextLevel.isBreak
-                ? 'PAUSE'
+                ? 'pause'
                 : `${formatChips(nextLevel.smallBlind)} / ${formatChips(nextLevel.bigBlind)}${nextLevel.ante ? ` + ${formatChips(nextLevel.ante)}` : ''}`
               }
               {' '}({nextLevel.duration} min)
@@ -173,24 +118,23 @@ export function DisplayPage() {
           )}
         </div>
 
-        {/* Progress bar — CR style */}
-        <div data-wave="4" className="w-full cr-timer-bar-track">
+        {/* Progress bar */}
+        <div data-wave="4" className="w-full timer-bar-track">
           <div
-            className={`cr-timer-bar-fill${isWarning ? ' cr-timer-bar-warning' : ' cr-timer-bar-blue'}`}
+            className={`timer-bar-fill${isWarning ? ' timer-bar-warning' : ''}`}
             style={{ width: `${levelProgress * 100}%` }}
           />
         </div>
 
         {/* Bottom stats */}
-        <div data-wave="5" className="grid grid-cols-2 sm:grid-cols-4 border-t border-white/10">
-          <StatBlock label="Joueurs" value={String(activePlayers.length)} sub={`/ ${players.length}`} color={gold} />
-          <StatBlock label="Stack moyen" value={formatChips(avgStack)} color="#ffffff" />
-          <StatBlock label="Pot total" value={`${totalPot}€`} color="#27ae60" />
+        <div data-wave="5" className="grid grid-cols-2 sm:grid-cols-4 border-t border-line bg-surface">
+          <StatBlock label="Joueurs" value={String(activePlayers.length)} sub={`/ ${players.length}`} />
+          <StatBlock label="Tapis moyen" value={formatChips(avgStack)} />
+          <StatBlock label="Pot total" value={`${totalPot} €`} />
 
-          {/* Prize pool */}
-          <div className="col-span-2 sm:col-span-1 flex flex-col py-3 sm:py-5 px-3 sm:px-5 border-t border-white/10 sm:border-t-0 min-h-0">
-            <div className="text-[#a0aec0] text-xs sm:text-base uppercase tracking-widest mb-2 font-cinzel text-center">
-              Prize Pool <span className="text-[#4a5568] text-xs normal-case">ITM {paidPlaces}/{players.length}</span>
+          <div className="col-span-2 sm:col-span-1 flex flex-col py-3 sm:py-5 px-3 sm:px-5 border-t border-line sm:border-t-0 min-h-0">
+            <div className="text-ink-muted text-xs sm:text-base mb-2 text-center">
+              Prize pool <span className="text-ink-faint text-xs num">· {paidPlaces} payés sur {players.length}</span>
             </div>
             <div className="overflow-hidden" style={{ height: '6.5rem' }}>
               <div
@@ -201,34 +145,23 @@ export function DisplayPage() {
                 } as React.CSSProperties : undefined}
               >
                 {prizes.map(({ position, percentage, amount }) => (
-                  <div key={position} className="flex items-center gap-2 rounded px-2 py-0.5 text-xs sm:text-sm flex-shrink-0"
-                    style={{
-                      background: position === 1 ? 'rgba(244,200,66,0.10)' :
-                                  position === 2 ? 'rgba(255,255,255,0.05)' :
-                                  position === 3 ? 'rgba(205,127,50,0.10)' : 'transparent',
-                    }}>
-                    <span className="font-cinzel font-bold w-6 text-xs" style={{ color: position <= 3 ? '#f4c842' : '#4a5568' }}>
+                  <div key={position} className="flex items-center gap-2 rounded px-2 py-0.5 text-xs sm:text-sm flex-shrink-0 num">
+                    <span className={`font-bold w-6 text-xs ${position <= 3 ? 'text-ink' : 'text-ink-faint'}`}>
                       {positionLabel(position)}
                     </span>
                     <div className="flex-1">
-                      <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{
-                          width: `${percentage}%`,
-                          background: isSC ? 'linear-gradient(90deg, #d98000, #f4c842)' : '#27ae60',
-                        }} />
+                      <div className="h-1 bg-sunken rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-accent" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
-                    <span className="text-[#4a5568] text-xs w-8 text-right">{percentage}%</span>
-                    <span className="font-cinzel font-bold text-xs w-12 text-right" style={{ color: isSC ? '#f4c842' : '#27ae60' }}>
-                      {amount}€
-                    </span>
+                    <span className="text-ink-faint text-xs w-8 text-right">{percentage}%</span>
+                    <span className="font-bold text-xs w-12 text-right text-ink">{amount} €</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -236,101 +169,49 @@ export function DisplayPage() {
 
 /* ── Sub-components ── */
 
-function DisplayIdle({ theme, tvBg }: { theme: string; tvBg: string }) {
-  const isSC = theme === 'supercell';
+function DisplayIdle() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 sm:gap-8 relative">
-      {isSC ? (
-        <>
-          <img className="absolute inset-0 w-full h-full object-cover"
-               src={tvBg} alt="" />
-          <div className="absolute inset-0" style={{ background: 'rgba(10,16,32,0.70)' }} />
-        </>
-      ) : (
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse at 50% 40%, #0a2010 0%, #041208 40%, #020a04 70%, #000 100%)',
-        }} />
-      )}
-      <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-4 text-center">
-        <div className="flex items-center justify-center gap-3 sm:gap-6">
-          {isSC
-            ? <img src="/clash_royal_todo/tournament_icon.webp" alt="" className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]" />
-            : <span style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: '#f4c842' }}>♠</span>
-          }
-          <div className="font-cinzel font-black drop-shadow-[0_0_40px_rgba(244,200,66,0.6)]"
-            style={{ fontSize: 'clamp(2rem, 7vw, 5.5rem)', color: '#f4c842', textShadow: '0 3px 0 rgba(0,0,0,0.8)' }}>
-            POKER ROYALE
-          </div>
-          {isSC
-            ? <img src="/clash_royal_todo/tournament_icon.webp" alt="" className="w-12 h-12 sm:w-20 sm:h-20 object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] scale-x-[-1]" />
-            : <span style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', color: '#f4c842' }}>♠</span>
-          }
-        </div>
-        <div className="font-cinzel text-base sm:text-2xl tracking-widest uppercase"
-          style={{ color: isSC ? '#8899cc' : '#4a8fd4' }}>
-          En attente du tournoi…
-        </div>
+    <div className="min-h-dvh flex flex-col items-center justify-center gap-6 bg-canvas text-ink px-4 text-center">
+      <img src="/favicon.svg" alt="" className="w-20 h-20 sm:w-28 sm:h-28" />
+      <div className="font-display font-extrabold" style={{ fontSize: 'clamp(3rem, 9vw, 7rem)', lineHeight: 1 }}>
+        blindr
+      </div>
+      <div className="text-base sm:text-2xl text-ink-muted">
+        En attente du tournoi…
       </div>
     </div>
   );
 }
 
-function BlindBlock({ label, value, isSC, accent = false }: {
-  label: string; value: string; isSC: boolean; accent?: boolean;
-}) {
+function BlindBlock({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="text-center">
-      <div className="text-[#a0aec0] text-xs sm:text-lg lg:text-xl uppercase tracking-widest mb-1 sm:mb-2">{label}</div>
-      <div className="font-cinzel font-black" style={{
-        fontSize: 'clamp(2rem, 7vw, 6rem)',
-        color: accent ? '#f4c842' : '#ffffff',
-        textShadow: isSC ? '0 3px 0 rgba(0,0,0,0.8)' : undefined,
-      }}>
+      <div className="text-ink-muted text-xs sm:text-lg lg:text-xl mb-1 sm:mb-2">{label}</div>
+      <div className={`num-display ${accent ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'clamp(2.5rem, 8vw, 7rem)' }}>
         {value}
       </div>
     </div>
   );
 }
 
-function StatBlock({ label, value, sub, color }: {
-  label: string; value: string; sub?: string; color: string;
-}) {
+function StatBlock({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="flex flex-col items-center py-4 sm:py-7 border-r border-white/10 last:border-r-0">
-      <div className="text-[#a0aec0] text-xs sm:text-base lg:text-lg uppercase tracking-widest mb-1 sm:mb-2 font-cinzel text-center px-2">{label}</div>
-      <div className="font-cinzel font-black leading-none" style={{ fontSize: 'clamp(1.8rem, 4.5vw, 4.5rem)', color }}>
+    <div className="flex flex-col items-center py-4 sm:py-7 border-r border-line last:border-r-0">
+      <div className="text-ink-muted text-xs sm:text-base lg:text-lg mb-1 sm:mb-2 text-center px-2">{label}</div>
+      <div className="num-display text-ink" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)' }}>
         {value}
       </div>
-      {sub && <div className="text-[#4a5568] text-xs sm:text-base mt-1">{sub}</div>}
+      {sub && <div className="text-ink-faint text-xs sm:text-base mt-1 num">{sub}</div>}
     </div>
   );
 }
 
 /* ── EndScreenTV ── */
 
-const TV_MEDAL  = ['🥇', '🥈', '🥉'];
-const TV_COLORS = ['#f4c842', '#a0aec0', '#cd7f32'];
-const TV_GLOW   = [
-  '0 0 80px rgba(244,200,66,0.6)',
-  '0 0 40px rgba(160,174,192,0.4)',
-  '0 0 40px rgba(205,127,50,0.4)',
-];
+const TV_COLORS = ['text-chip-1000', 'text-chip-1', 'text-chip-5000'];
+const TV_BORDER = ['border-chip-1000', 'border-chip-1', 'border-chip-5000'];
+const TV_BLOCK  = ['bg-chip-1000/15', 'bg-chip-1/12', 'bg-chip-5000/12'];
 const TV_ORDER  = [1, 0, 2];
-
-const TV_PARTICLES = [
-  { left: '8%',  delay: '0s',   size: 10, dur: '3.0s' },
-  { left: '18%', delay: '0.5s', size: 7,  dur: '3.5s' },
-  { left: '30%', delay: '0.9s', size: 12, dur: '2.8s' },
-  { left: '44%', delay: '0.3s', size: 8,  dur: '3.2s' },
-  { left: '56%', delay: '1.1s', size: 10, dur: '2.9s' },
-  { left: '68%', delay: '0.7s', size: 7,  dur: '3.4s' },
-  { left: '78%', delay: '0.4s', size: 11, dur: '2.7s' },
-  { left: '88%', delay: '1.3s', size: 8,  dur: '3.1s' },
-  { left: '23%', delay: '1.6s', size: 6,  dur: '2.6s' },
-  { left: '63%', delay: '1.0s', size: 9,  dur: '3.3s' },
-  { left: '40%', delay: '1.8s', size: 5,  dur: '2.8s' },
-  { left: '73%', delay: '1.4s', size: 8,  dur: '3.6s' },
-];
 
 function buildPodiumTV(tournament: TournamentState): Player[] {
   const { players } = tournament;
@@ -342,9 +223,8 @@ function buildPodiumTV(tournament: TournamentState): Player[] {
   return [winner, eliminated[0], eliminated[1]].filter(Boolean) as Player[];
 }
 
-function EndScreenTV({ tournament, theme, tvBg }: { tournament: TournamentState; theme: string; tvBg: string }) {
+function EndScreenTV({ tournament }: { tournament: TournamentState }) {
   const [revealed, setRevealed] = useState<number[]>([]);
-  const isSC = theme === 'supercell';
 
   const podium      = buildPodiumTV(tournament);
   const totalPot    = (tournament.players.length + tournament.rebuyCount) * tournament.config.buyIn;
@@ -365,51 +245,15 @@ function EndScreenTV({ tournament, theme, tvBg }: { tournament: TournamentState;
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
-      {isSC ? (
-        <>
-          <img className="absolute inset-0 w-full h-full object-cover"
-               src={tvBg} alt="" />
-          <div className="absolute inset-0" style={{ background: 'rgba(10,16,32,0.82)' }} />
-        </>
-      ) : (
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse at 50% 40%, #0a2010 0%, #041208 40%, #020a04 70%, #000 100%)',
-        }} />
-      )}
-
-      {isSC && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {TV_PARTICLES.map((p, i) => (
-            <div key={i} className="absolute bottom-0 rounded-full" style={{
-              left: p.left, width: p.size, height: p.size,
-              background: i % 3 === 0 ? '#f4c842' : i % 3 === 1 ? '#f4a800' : '#d98000',
-              animation: `floatParticle ${p.dur} ${p.delay} ease-out infinite`,
-            }} />
-          ))}
-        </div>
-      )}
-
+    <div className="min-h-dvh flex flex-col items-center justify-center relative overflow-hidden bg-canvas text-ink">
       <div className="relative z-10 flex flex-col items-center w-full px-4 sm:px-12 gap-2 sm:gap-4">
-        {/* Title */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          {isSC && <img src="/clash_royal_todo/crown-blue.png" alt="" className="w-10 h-10 sm:w-16 sm:h-16 object-contain" />}
-          <div className="font-cinzel font-black text-center"
-            style={{
-              fontSize: 'clamp(1.5rem, 5vw, 4rem)',
-              color: '#f4c842',
-              textShadow: '0 0 40px rgba(244,200,66,0.7), 0 3px 0 rgba(0,0,0,0.9)',
-            }}>
-            TOURNOI TERMINÉ
-          </div>
-          {isSC && <img src="/clash_royal_todo/crown-blue.png" alt="" className="w-10 h-10 sm:w-16 sm:h-16 object-contain scale-x-[-1]" />}
+        <div className="font-display font-extrabold text-center" style={{ fontSize: 'clamp(2rem, 6vw, 5rem)' }}>
+          Tournoi terminé
         </div>
-        <div className="font-cinzel tracking-widest uppercase text-center"
-          style={{ fontSize: 'clamp(0.75rem, 2vw, 1.4rem)', color: isSC ? '#8899cc' : '#4a8fd4' }}>
-          {tournament.config.name} · {durationMin}min · {totalPot}€
+        <div className="text-ink-muted text-center num" style={{ fontSize: 'clamp(0.85rem, 2vw, 1.4rem)' }}>
+          {tournament.config.name} · {durationMin} min · {totalPot} €
         </div>
 
-        {/* Podium */}
         <div className="flex items-end justify-center gap-3 sm:gap-8 xl:gap-14 mt-2 sm:mt-6 w-full">
           {TV_ORDER.map(rankIdx => {
             const player     = podium[rankIdx];
@@ -425,56 +269,34 @@ function EndScreenTV({ tournament, theme, tvBg }: { tournament: TournamentState;
                   transform: isRevealed ? 'translateY(0)' : 'translateY(60px)',
                   transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
                 }}>
-                <div style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', marginBottom: '0.4rem' }}>
-                  {TV_MEDAL[rankIdx]}
-                </div>
-                <div className="border-2 rounded-xl text-center"
+                <div className={`border-2 rounded-card bg-surface shadow-raised text-center ${TV_BORDER[rankIdx]}`}
                   style={{
                     padding: 'clamp(8px, 1.5vw, 24px) clamp(12px, 2.5vw, 40px)',
                     minWidth: rankIdx === 0 ? 'clamp(110px, 14vw, 240px)' : 'clamp(90px, 11vw, 190px)',
-                    background: isSC ? 'rgba(20,36,80,0.92)' : 'rgba(26,45,74,0.90)',
-                    borderColor: TV_COLORS[rankIdx],
-                    boxShadow: TV_GLOW[rankIdx],
                   }}>
-                  <div className="font-cinzel font-black leading-none mb-1" style={{
-                    fontSize: rankIdx === 0 ? 'clamp(2.2rem, 7vw, 6.5rem)'
-                            : rankIdx === 1 ? 'clamp(1.8rem, 5.5vw, 5rem)'
-                            : 'clamp(1.5rem, 4.5vw, 4rem)',
-                    color: TV_COLORS[rankIdx],
-                    textShadow: '0 2px 0 rgba(0,0,0,0.8)',
+                  <div className={`num-display mb-1 ${TV_COLORS[rankIdx]}`} style={{
+                    fontSize: rankIdx === 0 ? 'clamp(2.5rem, 8vw, 7rem)'
+                            : rankIdx === 1 ? 'clamp(2rem, 6vw, 5.5rem)'
+                            : 'clamp(1.7rem, 5vw, 4.5rem)',
                   }}>
                     #{rankIdx + 1}
                   </div>
-                  <div className="font-bold" style={{
+                  <div className="font-bold truncate" style={{
                     fontSize: 'clamp(0.85rem, 2.2vw, 1.8rem)',
-                    color: 'white',
                     maxWidth: 'clamp(90px, 10vw, 180px)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    textShadow: '0 1px 0 rgba(0,0,0,0.7)',
                   }}>
                     {player.name}
                   </div>
                   {prize > 0 && (
-                    <div className="font-cinzel font-bold mt-1" style={{
-                      fontSize: 'clamp(0.85rem, 1.8vw, 1.5rem)',
-                      color: '#f4c842',
-                      textShadow: '0 1px 0 rgba(0,0,0,0.7)',
-                    }}>
-                      {prize}€
+                    <div className="font-bold mt-1 text-success num" style={{ fontSize: 'clamp(0.85rem, 1.8vw, 1.5rem)' }}>
+                      {prize} €
                     </div>
                   )}
                 </div>
-                <div style={{
-                  width: '100%',
+                <div className={`w-full border-2 border-t-0 rounded-b-card ${TV_BORDER[rankIdx]} ${TV_BLOCK[rankIdx]}`} style={{
                   height: rankIdx === 0 ? 'clamp(30px, 4vw, 70px)'
                         : rankIdx === 1 ? 'clamp(20px, 3vw, 48px)'
                         : 'clamp(12px, 2vw, 28px)',
-                  background: rankIdx === 0 ? 'rgba(244,200,66,0.15)'
-                            : rankIdx === 1 ? 'rgba(160,174,192,0.10)'
-                            : 'rgba(205,127,50,0.10)',
-                  border: `2px solid ${TV_COLORS[rankIdx]}`,
-                  borderTop: 'none',
-                  borderRadius: '0 0 8px 8px',
                 }} />
               </div>
             );

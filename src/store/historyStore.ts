@@ -17,6 +17,6 @@ export const useHistoryStore = create<HistoryStore>()(
       removeEntry: (id) => set(state => ({ entries: state.entries.filter(e => e.id !== id) })),
       clearHistory: () => set({ entries: [] }),
     }),
-    { name: 'poker-history-state' }
+    { name: 'poker-history-state', version: 1 }
   )
 );

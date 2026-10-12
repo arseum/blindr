@@ -26,7 +26,7 @@ function tick() {
     const elapsed = Math.floor((now - lastTick) / 1000);
     if (elapsed >= 1) {
       lastTick += elapsed * 1000;
-      tickTimer(elapsed);
+      tickTimer(elapsed, lastTick);
       syncToLocalStorage();
     }
   } else {
@@ -40,7 +40,9 @@ export function initTimerLoop() {
   // Broadcast TOUTES les mutations du store (éliminations, pause, etc.)
   useTournamentStore.subscribe(() => syncToLocalStorage());
 
-  lastTick = Date.now();
+  // Reprend depuis le dernier tick persisté : le temps écoulé app fermée est rattrapé
+  const tournament = useTournamentStore.getState().tournament;
+  lastTick = tournament?.isRunning && tournament.lastTickAt ? tournament.lastTickAt : Date.now();
 
   // Web Worker : tourne sur un thread séparé, jamais mis en pause par le navigateur
   worker = new Worker(new URL('./timerWorker.ts', import.meta.url), { type: 'module' });

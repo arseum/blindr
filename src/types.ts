@@ -87,6 +87,7 @@ export interface TournamentState {
   isPaused: boolean;
   isEnded: boolean;
   startedAt: number | null;
+  lastTickAt: number | null; // horodatage du dernier tick appliqué, pour rattraper le temps écoulé app fermée
   rebuyCount: number;
 }
 
