@@ -93,7 +93,7 @@ Décisions :
 - [x] Joueurs : jetons-avatars, éliminés grisés ; Historique : pile de jetons, podium en jetons
 - [x] Prize Pool : interrupteurs, − / +, barre de répartition, jetons
 - [x] Écran TV : toujours sombre, ChipTimer, couleur du niveau, tient en 720p et 1080p
-- [ ] Tables + tirage des places : table ovale (maquettes à valider d'abord)
+- [x] Tables : table ovale (maquette A), slider horizontal table par table ; tirage en cartes à retourner (maquette B)
 
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine

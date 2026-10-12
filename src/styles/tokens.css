@@ -33,6 +33,13 @@
   --color-chip-5000: #a84a17;  /* orange */
   --color-chip-break: var(--color-ink-muted);
 
+  /* Table de jeu (identique en clair et en sombre) */
+  --color-felt:       #1d7a4c;
+  --color-felt-light: #2a8a5c;
+  --color-felt-deep:  #145a37;
+  --color-rail:       #2a1f17;
+  --color-on-felt:    #ffffff;
+
   /* Typo — Archivo seule, la largeur porte la hiérarchie */
   --font-sans: 'Archivo Variable', system-ui, -apple-system, sans-serif;
 

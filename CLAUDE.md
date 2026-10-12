@@ -29,7 +29,8 @@ src/
     TournamentEvents.tsx — monté dans App : alertes de niveau (store.subscribe), Wake Lock, fin de tournoi
     ChipTimer.tsx        — progression du niveau en 10 jetons
     EmptyTournament.tsx  — état vide « Aucun tournoi en cours »
-    SeatDraw.tsx         — tirage des places animé au lancement
+    SeatDraw.tsx         — tirage des places : une carte face cachée par joueur, à retourner
+    PokerTable.tsx       — table ovale en feutre, joueurs en jetons autour (couchée en paysage)
     BubbleBurst.tsx      — célébration quand la bulle éclate
     BlindCurve.tsx       — montée des blindes en barres
     ui/ChipWheel.tsx     — roulette de jetons (doigt, souris, molette, flèches)
@@ -40,8 +41,8 @@ src/
     ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
     BlindStructureEditor, PrizePoolSetupCard, EndTournamentOverlay, LevelTransitionOverlay
 
-  pages/  SetupPage (Config), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, toujours sombre, synchro via storage events)
-  hooks/useWakeLock.ts — écran allumé pendant le jeu
+  pages/  SetupPage (Config), TablesPage (slider horizontal, une table par écran), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, toujours sombre, synchro via storage events)
+  hooks/useWakeLock.ts — écran allumé pendant le jeu ; hooks/useMediaQuery.ts
   utils/sound.ts       — sons Web Audio (débloqués au premier toucher dans main.tsx) + vibrate()
   utils/feedback.ts    — feedback('tick' | 'select' | 'eliminate' | …) : son + vibration selon les Réglages. Tout geste passe par là.
   utils/presets.ts     — formules + valeurs des roulettes ; utils/bubble.ts — état de la bulle
