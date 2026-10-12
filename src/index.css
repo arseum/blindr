@@ -45,6 +45,75 @@ h1, h2, h3 {
 }
 
 /* ============================================================
+   JETON (roulettes, tirage) — centre plein, liseré clair, 8 inserts
+   ============================================================ */
+.chip-coin {
+  --c: var(--color-accent);
+  flex: none;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle closest-side, var(--c) 0 56%, color-mix(in srgb, var(--color-surface) 80%, transparent) 57% 63%, transparent 64%),
+    repeating-conic-gradient(var(--c) 0 30deg, var(--color-surface) 30deg 45deg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ink) 14%, transparent), 0 6px 12px -8px rgb(0 0 0 / 0.5);
+  color: var(--color-surface);
+  font-weight: 800;
+  font-stretch: 70%;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: transform 60ms linear, opacity 60ms linear;
+}
+
+/* Roulette : défilement horizontal aimanté, bords estompés */
+.chip-wheel {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  padding-block: 10px;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  outline: none;
+  cursor: grab;
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+}
+.chip-wheel::-webkit-scrollbar { display: none; }
+.chip-wheel > * { scroll-snap-align: center; }
+.chip-wheel:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: 12px; }
+
+/* Odomètre : chaque chiffre est une colonne 0-9 qui défile */
+.odo { display: inline-flex; overflow: hidden; height: 1em; line-height: 1; }
+.odo-col { display: flex; flex-direction: column; transition: transform 600ms cubic-bezier(.2, .9, .25, 1); }
+.odo-col > span { height: 1em; }
+
+/* Tirage des places : la carte arrive du sabot */
+.deal-in { animation: dealIn 380ms cubic-bezier(.2, .9, .3, 1.15) both; }
+@keyframes dealIn {
+  from { opacity: 0; transform: translateY(-48px) rotate(-10deg) scale(0.7); }
+}
+
+/* Bulle éclatée : pluie de jetons + annonce */
+.chip-rain { animation: chipRain linear both; }
+@keyframes chipRain {
+  to { transform: translateY(115dvh) rotate(540deg); }
+}
+.burst-in { animation: burstIn 500ms cubic-bezier(.2, .9, .3, 1.3) both; }
+@keyframes burstIn { from { opacity: 0; transform: scale(0.6); } }
+
+/* Bandeau d'annulation */
+.toast-in { animation: toastIn 260ms cubic-bezier(.2, .9, .3, 1.1); }
+@keyframes toastIn { from { transform: translateY(140%); } }
+.toast-timer { animation: toastTimer linear forwards; }
+@keyframes toastTimer { to { transform: scaleX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .odo-col, .chip-coin, .toast-in, .deal-in, .burst-in { transition: none; animation: none; }
+}
+
+/* ============================================================
    CHIP TIMER — 10 jetons, chacun = 1/10 du niveau, dépensés au fil du temps
    ============================================================ */
 .chip-token {

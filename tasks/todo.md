@@ -40,6 +40,28 @@ Décisions :
 - [x] App ouvre directement le Timer si un tournoi est en cours
 - [x] Vérification : tests, build, captures téléphone portrait/paysage + tablette, clair/sombre
 
+## Phase 3b — Interactions (validées dans le labo https://claude.ai/artifact/61Vy25dMGNq3Lb8P2U1GPU)
+- [x] Logique : grosse blinde de départ choisie (`generateBlindStructure`), formules (presets), tirage des places aléatoire, état de la bulle — avec tests
+- [x] Sons : clac de jeton, bulle, célébration
+- [x] Composants : `ChipWheel`, `Odometer`, `HoldButton`, `SwipeRow`, `BlindCurve`
+- [x] Config refaite : formules → joueurs → jetons (roulettes tapis / grosse blinde / buy-in, profondeur en BB) → options avancées repliées
+- [x] Timer : toucher = pause, glisser = niveau, blindes en odomètre, « Recommencer » et « Terminer » à maintenir
+- [x] Joueurs : glisser pour éliminer + bandeau « Annuler » 5 s
+- [x] Historique : vider à maintenir
+- [x] Tirage des places animé au lancement
+- [x] Bulle : bandeau « Bulle ! » (Timer + TV) puis célébration quand elle éclate
+- [x] Vérification : tests, build, captures, gestes testés par CDP
+- Reporté : coller une liste de noms
+
+### Phase 3b — terminée
+- Config refaite : nom, formules (Turbo, Apéro, Soirée, Deepstack) + résumé et courbe, joueurs (Entrée enchaîne la saisie), roulettes tapis / grosse blinde / buy-in, profondeur en BB, plus petit jeton en jetons cliquables, options avancées repliées.
+- Timer : toucher = pause, glisser = niveau, blindes en odomètre, Recommencer / Terminer à maintenir, bandeau Bulle, badge « Dans l'argent ».
+- Joueurs : glisser pour éliminer + « Annuler » 5 s ; Historique : vider à maintenir.
+- Tirage des places : placement aléatoire (Fisher-Yates) + donne animée ; Bulle : annonce + célébration (pluie de jetons), bandeau sur l'écran TV.
+- Retours centralisés dans `utils/feedback.ts` (son + vibration selon Réglages).
+- Fix générateur : les pauses (5 à 15 min selon le niveau) sont comptées correctement ; Turbo passait à 4 niveaux / 32 min.
+- Vérifié par CDP (Chrome mobile 390×844) : formule, roulette (souris), tirage, toucher/glisser timer, glisser pour éliminer + annuler, bulle et célébration. 62 tests.
+
 ## Phase 4 — PWA
 Décisions :
 - Mise à jour en mode « prompt » : jamais de rechargement automatique en plein tournoi. Un bandeau propose « Mettre à jour ».

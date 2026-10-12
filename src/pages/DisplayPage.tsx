@@ -3,6 +3,8 @@ import { TV_SYNC_KEY } from '../timer';
 import { formatTime, formatChips, TV_EFFECT_KEY } from '../constants';
 import { calculatePrizes, getPaidPlaces, positionLabel } from '../utils/prizePool';
 import { levelChip } from '../utils/chips';
+import { bubbleState } from '../utils/bubble';
+import { Odometer } from '../components/ui/Odometer';
 import { LevelTransitionOverlay } from '../components/LevelTransitionOverlay';
 import type { TransitionEffect } from '../components/LevelTransitionOverlay';
 import type { TournamentState, Player } from '../types';
@@ -50,6 +52,7 @@ export function DisplayPage() {
   const paidPlaces    = getPaidPlaces(players.length, config.prizePool.itmPct);
   const levelProgress = 1 - secondsRemaining / (currentLevel.duration * 60);
   const isWarning     = secondsRemaining <= 60 && !currentLevel.isBreak;
+  const bubble        = bubbleState(activePlayers.length, paidPlaces);
 
   // Niveau de tremblement 0-6 progressif (monte toutes les ~10s sous la minute)
   const shakeLevel = isWarning ? Math.min(6, Math.floor((60 - secondsRemaining) / 10) + 1) : 0;
@@ -81,6 +84,12 @@ export function DisplayPage() {
             {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
           </div>
         </div>
+
+        {bubble === 'bubble' && (
+          <div className="mx-4 sm:mx-10 px-6 py-3 rounded-card bg-danger text-on-accent text-center font-display font-extrabold uppercase text-2xl sm:text-4xl motion-safe:animate-pulse">
+            Bulle ! Le prochain éliminé repart sans rien
+          </div>
+        )}
 
         {/* Center — Timer + Blinds */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-12 gap-3 sm:gap-6">
@@ -188,7 +197,7 @@ function BlindBlock({ label, value, accent = false }: { label: string; value: st
     <div className="text-center">
       <div className="text-ink-muted text-xs sm:text-lg lg:text-xl mb-1 sm:mb-2">{label}</div>
       <div className={`num-display ${accent ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'clamp(2.5rem, 8vw, 7rem)' }}>
-        {value}
+        <Odometer value={value} />
       </div>
     </div>
   );

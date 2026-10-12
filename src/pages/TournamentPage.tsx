@@ -1,7 +1,13 @@
-import { Play, Pause, SkipForward, SkipBack, RotateCcw, Users } from 'lucide-react';
+import { useState } from 'react';
+import { Play, Pause, SkipForward, SkipBack, RotateCcw, Users, Flag } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ChipTimer } from '../components/ChipTimer';
+import { Odometer } from '../components/ui/Odometer';
+import { HoldButton } from '../components/ui/HoldButton';
+import { useTapSwipe } from '../hooks/useTapSwipe';
+import { feedback } from '../utils/feedback';
+import { bubbleState } from '../utils/bubble';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyTournament } from '../components/EmptyTournament';
 import { useTournamentStore } from '../store/tournamentStore';
@@ -29,7 +35,23 @@ function blindsLabel(level: BlindLevel) {
 }
 
 export function TournamentPage({ onNavigate }: TournamentPageProps) {
-  const { tournament, startTimer, pauseTimer, nextLevel, prevLevel, resetTimer } = useTournamentStore();
+  const { tournament, startTimer, pauseTimer, nextLevel, prevLevel, resetTimer, endTournament } = useTournamentStore();
+  const [drag, setDrag] = useState(0);
+
+  // Tout le chrono est une grosse touche : toucher = pause / reprise, glisser = changer de niveau
+  const gestures = useTapSwipe({
+    onTap: () => {
+      if (!tournament) return;
+      if (tournament.isRunning) { pauseTimer(); feedback('pause'); } else { startTimer(); feedback('resume'); }
+    },
+    onSwipe: dir => {
+      if (!tournament) return;
+      const target = tournament.currentLevelIndex + dir;
+      if (target < 0 || target >= tournament.config.blindStructure.length) { feedback('bump'); return; }
+      if (dir > 0) nextLevel(); else prevLevel();
+    },
+    onDrag: dx => setDrag(dx),
+  });
 
   if (!tournament) return <EmptyTournament title="Timer" onNavigate={onNavigate} />;
 
@@ -47,6 +69,7 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
   const isWarning       = secondsRemaining <= 60 && !currentLevel.isBreak;
   const breakIn         = secondsUntilBreak(structure, currentLevelIndex, secondsRemaining);
   const isLastLevel     = currentLevelIndex >= structure.length - 1;
+  const bubble          = bubbleState(activeCount, paidPlaces);
 
   return (
     <div className="px-4 lg:px-8 max-w-6xl mx-auto">
@@ -59,17 +82,42 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
 
         {/* ── Timer ── */}
         <section aria-label="Niveau en cours" className="flex flex-col gap-4 short:gap-2 md:bg-surface md:rounded-card md:border md:border-line md:shadow-raised md:p-6 short:md:p-0 short:md:bg-transparent short:md:border-0 short:md:shadow-none">
-          <div className="font-display text-2xl short:text-lg font-extrabold uppercase text-accent">
-            {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
-          </div>
+          {bubble === 'bubble' && (
+            <div role="status" className="flex items-center gap-3 px-4 py-3 rounded-card bg-danger text-on-accent motion-safe:animate-pulse">
+              <span className="font-display text-2xl font-extrabold uppercase">Bulle !</span>
+              <span className="text-sm">Le prochain éliminé repart sans rien.</span>
+            </div>
+          )}
 
           <div
-            className={`num-display text-[clamp(5.5rem,30vw,9rem)] md:text-[clamp(6rem,13vw,11rem)] short:text-[22vh] ${isWarning ? 'text-danger' : 'text-ink'}`}
+            {...gestures}
+            role="button"
+            tabIndex={0}
+            aria-label={isRunning ? 'Chrono en cours : toucher pour mettre en pause' : 'Chrono en pause : toucher pour relancer'}
+            onKeyDown={e => {
+              if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (isRunning) pauseTimer(); else startTimer(); }
+              if (e.key === 'ArrowRight' && !isLastLevel) nextLevel();
+              if (e.key === 'ArrowLeft' && currentLevelIndex > 0) prevLevel();
+            }}
+            className="relative flex flex-col gap-4 short:gap-2 touch-pan-y select-none cursor-pointer rounded-card focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+            style={{ transform: drag ? `translateX(${drag * 0.25}px)` : undefined, transition: drag ? 'none' : 'transform 250ms ease-out' }}
           >
-            {formatTime(secondsRemaining)}
-          </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-display text-2xl short:text-lg font-extrabold uppercase text-accent">
+                {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
+              </div>
+              {!isRunning && <span className="text-xs font-bold px-2 py-1 rounded-[6px] bg-ink text-canvas">En pause</span>}
+              {isRunning && bubble === 'itm' && <span className="text-xs font-bold px-2 py-1 rounded-[6px] bg-success/15 text-success">Dans l'argent</span>}
+            </div>
 
-          <ChipTimer totalSeconds={currentLevel.duration * 60} secondsRemaining={secondsRemaining} />
+            <div
+              className={`num-display text-[clamp(5.5rem,30vw,9rem)] md:text-[clamp(6rem,13vw,11rem)] short:text-[22vh] transition-opacity ${isWarning ? 'text-danger' : 'text-ink'} ${isRunning ? '' : 'opacity-50'}`}
+            >
+              {formatTime(secondsRemaining)}
+            </div>
+
+            <ChipTimer totalSeconds={currentLevel.duration * 60} secondsRemaining={secondsRemaining} />
+          </div>
 
           {currentLevel.isBreak ? (
             <p className="text-ink-muted num">
@@ -98,12 +146,17 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
               <SkipForward size={22} />
             </RoundButton>
           </div>
-          <button
-            onClick={resetTimer}
-            className="self-center short:self-start inline-flex items-center gap-1.5 min-h-11 px-3 text-sm text-ink-muted hover:text-ink rounded-control"
-          >
-            <RotateCcw size={15} /> Recommencer le niveau
-          </button>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <HoldButton tone="neutral" onConfirm={resetTimer} doneLabel="Niveau recommencé" className="text-sm">
+              <RotateCcw size={15} /> Recommencer
+            </HoldButton>
+            <HoldButton onConfirm={endTournament} doneLabel="Tournoi terminé" className="text-sm">
+              <Flag size={15} /> Terminer
+            </HoldButton>
+          </div>
+          <p className="text-xs text-ink-faint text-center">
+            Touche le chrono pour pause, glisse-le pour changer de niveau. Maintiens les boutons du bas pour confirmer.
+          </p>
         </section>
 
         {/* ── Infos ── */}
@@ -164,7 +217,7 @@ function Blind({ label, value, accent = false }: { label: string; value: string;
   return (
     <div className="flex flex-col">
       <span className="text-sm text-ink-muted">{label}</span>
-      <span className={`num-display text-[clamp(2.5rem,12vw,4rem)] short:text-[9vh] ${accent ? 'text-accent' : 'text-ink'}`}>{value}</span>
+      <span className={`num-display text-[clamp(2.5rem,12vw,4rem)] short:text-[9vh] ${accent ? 'text-accent' : 'text-ink'}`}><Odometer value={value} /></span>
     </div>
   );
 }

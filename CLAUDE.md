@@ -28,6 +28,11 @@ src/
     TournamentEvents.tsx — monté dans App : alertes de niveau (store.subscribe), Wake Lock, fin de tournoi
     ChipTimer.tsx        — progression du niveau en 10 jetons
     EmptyTournament.tsx  — état vide « Aucun tournoi en cours »
+    SeatDraw.tsx         — tirage des places animé au lancement
+    BubbleBurst.tsx      — célébration quand la bulle éclate
+    BlindCurve.tsx       — montée des blindes en barres
+    ui/ChipWheel.tsx     — roulette de jetons (doigt, souris, molette, flèches)
+    ui/Odometer.tsx, ui/HoldButton.tsx (maintenir pour confirmer), ui/SwipeRow.tsx (glisser pour agir), ui/UndoToast.tsx
     ui/Button.tsx        — variants primary/secondary/danger/success/ghost
     ui/Card.tsx          — prop highlight= (liseré accent)
     ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
@@ -36,6 +41,9 @@ src/
   pages/  SetupPage (Config), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, synchro via storage events)
   hooks/useWakeLock.ts — écran allumé pendant le jeu
   utils/sound.ts       — sons Web Audio (débloqués au premier toucher dans main.tsx) + vibrate()
+  utils/feedback.ts    — feedback('tick' | 'select' | 'eliminate' | …) : son + vibration selon les Réglages. Tout geste passe par là.
+  utils/presets.ts     — formules + valeurs des roulettes ; utils/bubble.ts — état de la bulle
+  hooks/useTapSwipe.ts — toucher vs glisser horizontal sur une même surface
   store/  tournamentStore.ts ('poker-tournament-state', v1), historyStore.ts ('poker-history-state', v1), settingsStore.ts ('blindr-settings')
   utils/  prizePool.ts, tournamentEstimator.ts, chips.ts (levelChip)
   constants.ts — DEFAULT_BLIND_STRUCTURE, formatChips() (exact sous 100 000), formatTime()

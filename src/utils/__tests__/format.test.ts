@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { formatChips, formatTime } from '../../constants';
 
 // Intl fr-FR sépare les milliers par une espace fine insécable (U+202F)
-const nb = (s: string) => s.replace(/ /g, ' ');
+const nb = (s: string) => s.replace(/\u202f/g, ' ');
 
 describe('formatChips', () => {
   it.each([

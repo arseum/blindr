@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Search, UserMinus, Undo2, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { EmptyTournament } from '../components/EmptyTournament';
+import { SwipeRow } from '../components/ui/SwipeRow';
+import { UndoToast } from '../components/ui/UndoToast';
+import { Odometer } from '../components/ui/Odometer';
+import { feedback } from '../utils/feedback';
 import { useTournamentStore } from '../store/tournamentStore';
 import type { Page, Player, TournamentState } from '../types';
 
@@ -20,6 +24,8 @@ function canReEnter(tournament: TournamentState, player: Player): boolean {
 export function PlayersPage({ onNavigate }: PlayersPageProps) {
   const { tournament, eliminatePlayer, undoElimination, rebuyPlayer } = useTournamentStore();
   const [search, setSearch] = useState('');
+  const [toast, setToast] = useState<{ playerId: string; message: string } | null>(null);
+  const closeToast = useCallback(() => setToast(null), []);
 
   if (!tournament) return <EmptyTournament title="Joueurs" onNavigate={onNavigate} />;
 
@@ -32,9 +38,16 @@ export function PlayersPage({ onNavigate }: PlayersPageProps) {
     .sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
   const tableName = (id: string) => tables.find(t => t.id === id)?.name;
 
+  const eliminate = (player: Player) => {
+    const place = active.length; // la place = nombre de joueurs encore en jeu
+    eliminatePlayer(player.id);
+    feedback('eliminate');
+    setToast({ playerId: player.id, message: `${player.name} éliminé·e · ${place}e place` });
+  };
+
   return (
     <div className="px-4 lg:px-8 max-w-3xl mx-auto pb-6">
-      <PageHeader title="Joueurs" subtitle={`${active.length} en jeu · ${eliminated.length} éliminés`} />
+      <PageHeader title="Joueurs" subtitle={<><Odometer value={String(active.length)} /> en jeu · {eliminated.length} éliminés</>} />
 
       <label className="relative block mb-5">
         <span className="sr-only">Rechercher un joueur</span>
@@ -50,21 +63,24 @@ export function PlayersPage({ onNavigate }: PlayersPageProps) {
       </label>
 
       <section aria-labelledby="active-h" className="mb-8">
-        <h2 id="active-h" className="text-sm font-semibold text-ink-muted mb-2">En jeu</h2>
+        <h2 id="active-h" className="flex justify-between text-sm font-semibold text-ink-muted mb-2">En jeu <span className="font-normal text-ink-faint">Glisse vers la gauche pour éliminer</span></h2>
         <ul className="rounded-card bg-surface border border-line divide-y divide-line overflow-hidden">
           {active.filter(matches).map(player => (
-            <li key={player.id} className="flex items-center gap-3 pl-4 pr-2 min-h-14">
-              <span className="flex-1 min-w-0">
-                <span className="block font-semibold truncate">{player.name}</span>
-                {tableName(player.tableId) && <span className="block text-xs text-ink-muted">{tableName(player.tableId)}</span>}
-              </span>
-              <button
-                onClick={() => eliminatePlayer(player.id)}
-                className="inline-flex items-center gap-1.5 min-h-11 px-3 rounded-control text-sm font-semibold text-danger hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger"
-              >
-                <UserMinus size={17} /> Éliminer
-              </button>
-            </li>
+            <SwipeRow key={player.id} actionLabel={<><UserMinus size={18} /> Éliminer</>} onSwipe={() => eliminate(player)}>
+              <div className="flex items-center gap-3 pl-4 pr-2 min-h-14">
+                <span className="flex-1 min-w-0">
+                  <span className="block font-semibold truncate">{player.name}</span>
+                  {tableName(player.tableId) && <span className="block text-xs text-ink-muted">{tableName(player.tableId)}</span>}
+                </span>
+                <button
+                  onClick={() => eliminate(player)}
+                  aria-label={`Éliminer ${player.name}`}
+                  className="grid place-items-center w-11 h-11 rounded-full text-ink-faint hover:text-danger hover:bg-danger/10 focus-visible:outline-2 focus-visible:outline-danger"
+                >
+                  <UserMinus size={18} />
+                </button>
+              </div>
+            </SwipeRow>
           ))}
           {active.filter(matches).length === 0 && (
             <li className="px-4 py-6 text-center text-ink-muted text-sm">Aucun joueur en jeu ne correspond.</li>
@@ -99,6 +115,15 @@ export function PlayersPage({ onNavigate }: PlayersPageProps) {
             ))}
           </ul>
         </section>
+      )}
+
+      {toast && (
+        <UndoToast
+          key={toast.playerId}
+          message={toast.message}
+          onUndo={() => { undoElimination(toast.playerId); setToast(null); feedback('select'); }}
+          onClose={closeToast}
+        />
       )}
     </div>
   );

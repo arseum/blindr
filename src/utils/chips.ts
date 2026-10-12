@@ -17,3 +17,12 @@ export function levelChip(level: BlindLevel): ChipKey {
   }
   return `${chip}` as ChipKey;
 }
+
+/** Couleur CSS du jeton qui correspond à un montant (sert aussi aux montants en euros des roulettes). */
+export function chipColorVar(amount: number): string {
+  let chip: number = CHIP_DENOMINATIONS[0];
+  for (const d of CHIP_DENOMINATIONS) {
+    if (d <= amount) chip = d;
+  }
+  return `var(--color-chip-${chip})`;
+}

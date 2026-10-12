@@ -27,9 +27,19 @@ function generateId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
+/** Tirage au sort des places (Fisher-Yates). */
+function shuffle<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function createTables(players: Player[], maxPerTable: number): Table[] {
   const tables: Table[] = [];
-  const activePlayers = [...players];
+  const activePlayers = shuffle(players);
   const tableCount = Math.ceil(activePlayers.length / maxPerTable);
 
   for (let i = 0; i < tableCount; i++) {

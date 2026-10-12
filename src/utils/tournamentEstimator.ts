@@ -4,27 +4,32 @@ import type { BlindLevel, ReEntryConfig } from '../types';
  * Génère une structure de blindes automatique.
  * - BB de départ ≈ 1% du stack, arrondi au plus petit jeton
  * - Progression x1.5 par niveau, arrondie au plus petit jeton
- * - Pauses de 15 min insérées après chaque tranche de 4 niveaux de jeu
+ * - Pauses (5 à 15 min selon la durée des niveaux) après chaque tranche de 4 niveaux de jeu
  * - Antes à partir du niveau 7 (≈ 10% de la BB)
  *
  * @param levelDurationMinutes  Durée souhaitée par niveau (défaut 20 min)
+ * @param startBigBlind         Grosse blinde du niveau 1 (défaut : 1 % du tapis, soit 100 BB)
  */
 export function generateBlindStructure(
   startingStack: number,
   smallestChip: number,
   targetDurationMinutes = 180,
-  levelDurationMinutes = 20
+  levelDurationMinutes = 20,
+  startBigBlind?: number
 ): BlindLevel[] {
   const chip = Math.max(1, smallestChip);
   const roundTo = (n: number) => Math.max(chip, Math.round(n / chip) * chip);
   const lvDur = Math.max(5, Math.round(levelDurationMinutes));
 
-  // Calcul du nombre de niveaux de jeu (une itération pour tenir compte des pauses)
-  const approxLevels = Math.round(targetDurationMinutes / lvDur);
-  const nbBreaks = Math.floor(approxLevels / 4);
-  const GAME_LEVELS = Math.min(24, Math.max(4, Math.round((targetDurationMinutes - nbBreaks * 15) / lvDur)));
+  // Pauses proportionnées aux niveaux (5 à 15 min), une après chaque tranche de 4 niveaux de jeu
+  const breakDur = Math.min(15, Math.max(5, lvDur));
+  const totalFor = (levels: number) => levels * lvDur + Math.floor((levels - 1) / 4) * breakDur;
+  // Plus grand nombre de niveaux qui tient dans la durée visée (à un demi-niveau près)
+  let GAME_LEVELS = Math.max(4, Math.round(targetDurationMinutes / lvDur));
+  while (GAME_LEVELS > 4 && totalFor(GAME_LEVELS) > targetDurationMinutes + lvDur / 2) GAME_LEVELS--;
+  GAME_LEVELS = Math.min(24, GAME_LEVELS);
 
-  const startBB = roundTo(startingStack * 0.01);
+  const startBB = roundTo(startBigBlind ?? startingStack * 0.01);
   const result: BlindLevel[] = [];
   let gameLevel = 0;
 
@@ -48,7 +53,7 @@ export function generateBlindStructure(
         smallBlind: 0,
         bigBlind: 0,
         ante: 0,
-        duration: 15,
+        duration: breakDur,
         isBreak: true,
       });
     }

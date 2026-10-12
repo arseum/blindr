@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTournamentStore } from '../store/tournamentStore';
 import { useHistoryStore } from '../store/historyStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { playLevelChange, playOneMinuteWarning, vibrate } from '../utils/sound';
-import { calculatePrizes } from '../utils/prizePool';
+import { calculatePrizes, getPaidPlaces } from '../utils/prizePool';
+import { bubbleState, bubbleBurst } from '../utils/bubble';
+import { feedback } from '../utils/feedback';
+import { BubbleBurst } from './BubbleBurst';
 import { TV_EFFECT_KEY } from '../constants';
 import { LevelTransitionOverlay, pickRandomEffect } from './LevelTransitionOverlay';
 import type { TransitionEffect } from './LevelTransitionOverlay';
@@ -23,6 +26,8 @@ export function TournamentEvents({ onNavigate }: { onNavigate: (page: Page) => v
   const addEntry = useHistoryStore(s => s.addEntry);
 
   const [transition, setTransition] = useState<{ effect: TransitionEffect; label: string } | null>(null);
+  const [burst, setBurst] = useState<number | null>(null);
+  const closeBurst = useCallback(() => setBurst(null), []);
 
   useWakeLock(!!tournament?.isRunning);
 
@@ -31,6 +36,13 @@ export function TournamentEvents({ onNavigate }: { onNavigate: (page: Page) => v
     const now = state.tournament;
     const before = prevState.tournament;
     if (!now || !before || now.id !== before.id) return; // pas de tournoi ou nouveau tournoi : rien à annoncer
+
+    // Bulle : annonce quand on y entre, célébration quand elle éclate
+    const paid = getPaidPlaces(now.players.length, now.config.prizePool.itmPct);
+    const bubbleBefore = bubbleState(before.players.filter(p => !p.isEliminated).length, paid);
+    const bubbleNow = bubbleState(now.players.filter(p => !p.isEliminated).length, paid);
+    if (bubbleBefore === 'before' && bubbleNow === 'bubble') feedback('bubble');
+    if (bubbleBurst(bubbleBefore, bubbleNow) && !now.isEnded) { setBurst(paid); feedback('celebrate'); }
 
     const { sound, vibration } = useSettingsStore.getState();
     const level = now.config.blindStructure[now.currentLevelIndex];
@@ -98,6 +110,7 @@ export function TournamentEvents({ onNavigate }: { onNavigate: (page: Page) => v
           onDone={() => setTransition(null)}
         />
       )}
+      {burst !== null && <BubbleBurst paidCount={burst} onDone={closeBurst} />}
       {tournament.isEnded && <EndTournamentOverlay tournament={tournament} onClose={handleCloseEnd} />}
     </>
   );

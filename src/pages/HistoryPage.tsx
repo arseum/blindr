@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Trash2, Trophy } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useHistoryStore } from '../store/historyStore';
 import { PageHeader } from '../components/PageHeader';
+import { HoldButton } from '../components/ui/HoldButton';
 import type { Page } from '../types';
 
 interface HistoryPageProps {
@@ -23,7 +23,7 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
           title="Historique"
           subtitle={`${totalGames} tournoi${totalGames > 1 ? 's' : ''} enregistré${totalGames > 1 ? 's' : ''}`}
           actions={entries.length > 0 && (
-            <ConfirmClear onConfirm={clearHistory} />
+            <HoldButton onConfirm={clearHistory} doneLabel="Effacé" className="text-sm"><Trash2 size={16} /> Vider</HoldButton>
           )}
         />
 
@@ -103,24 +103,3 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
   );
 }
 
-/** Vider l'historique demande une seconde confirmation : l'action est définitive. */
-function ConfirmClear({ onConfirm }: { onConfirm: () => void }) {
-  const [armed, setArmed] = useState(false);
-  if (!armed) {
-    return (
-      <button
-        onClick={() => setArmed(true)}
-        aria-label="Vider l'historique"
-        className="grid place-items-center w-11 h-11 rounded-full text-ink-muted hover:bg-danger/10 hover:text-danger"
-      >
-        <Trash2 size={20} />
-      </button>
-    );
-  }
-  return (
-    <span className="flex items-center gap-1">
-      <Button variant="danger" size="sm" onClick={() => { onConfirm(); setArmed(false); }}>Tout effacer</Button>
-      <Button variant="ghost" size="sm" onClick={() => setArmed(false)}>Annuler</Button>
-    </span>
-  );
-}

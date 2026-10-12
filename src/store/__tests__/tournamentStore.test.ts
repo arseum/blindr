@@ -85,3 +85,15 @@ describe('re-entry', () => {
     expect(t().rebuyCount).toBe(0);
   });
 });
+
+describe('tirage des places', () => {
+  it('place chaque joueur une fois, tables équilibrées', () => {
+    const names = Array.from({ length: 13 }, (_, i) => `J${i}`);
+    store().initTournament(config, names);
+    const seated = t().tables.flatMap(tb => tb.playerIds);
+    expect(new Set(seated).size).toBe(13);
+    const sizes = t().tables.map(tb => tb.playerIds.length);
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+    t().players.forEach(p => expect(t().tables.find(tb => tb.id === p.tableId)?.playerIds).toContain(p.id));
+  });
+});
