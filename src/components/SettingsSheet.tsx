@@ -4,6 +4,7 @@ import { useColorScheme, COLOR_SCHEMES, COLOR_SCHEME_LABELS } from '../contexts/
 import { useSettingsStore } from '../store/settingsStore';
 import { playLevelChange, unlockAudio, vibrate } from '../utils/sound';
 import { Switch } from './ui/Switch';
+import { InstallCard } from './InstallCard';
 
 const SCHEME_ICONS = { system: Monitor, light: Sun, dark: Moon };
 
@@ -21,7 +22,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative w-full sm:max-w-md bg-surface rounded-t-sheet sm:rounded-sheet shadow-sheet px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pt-5 flex flex-col gap-6">
+      <div className="relative w-full sm:max-w-md max-h-[92dvh] overflow-y-auto bg-surface rounded-t-sheet sm:rounded-sheet shadow-sheet px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pt-5 flex flex-col gap-6">
         <div className="mx-auto w-10 h-1 rounded-full bg-line sm:hidden" />
         <div className="flex items-center justify-between">
           <h2 id="settings-title" className="font-display text-2xl font-extrabold">Réglages</h2>
@@ -29,6 +30,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
             <X size={22} />
           </button>
         </div>
+
+        <InstallCard />
 
         <section className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-ink-muted">Apparence</h3>

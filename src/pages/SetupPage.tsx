@@ -4,6 +4,9 @@ import {Card} from '../components/ui/Card';
 import {Button} from '../components/ui/Button';
 import {Input} from '../components/ui/Input';
 import {PageHeader} from '../components/PageHeader';
+import {InstallCard} from '../components/InstallCard';
+
+const INSTALL_DISMISSED_KEY = 'blindr-install-dismissed';
 import {PrizePoolSetupCard} from '../components/PrizePoolSetupCard';
 import {BlindStructureEditor} from '../components/BlindStructureEditor';
 import {useTournamentStore} from '../store/tournamentStore';
@@ -32,6 +35,14 @@ export function SetupPage({onNavigate}: SetupPageProps) {
     const [playerNames, setPlayerNames] = useState<string[]>(['', '']);
     const [bulkCount, setBulkCount] = useState(8);
     const [showResumePrompt, setShowResumePrompt] = useState(!!tournament);
+    // Invitation à installer l'app, masquable une fois pour toutes
+    const [showInstall, setShowInstall] = useState(() => {
+        try { return localStorage.getItem(INSTALL_DISMISSED_KEY) !== '1'; } catch { return true; }
+    });
+    const dismissInstall = () => {
+        setShowInstall(false);
+        try { localStorage.setItem(INSTALL_DISMISSED_KEY, '1'); } catch { /* stockage indisponible */ }
+    };
 
     // Auto-calcul : 'idle' | 'input' | 'loading'
     const [autoCalcState, setAutoCalcState] = useState<'idle' | 'input' | 'loading'>('idle');
@@ -66,6 +77,7 @@ export function SetupPage({onNavigate}: SetupPageProps) {
 
     const validPlayers = playerNames.filter(n => n.trim().length > 0);
     const canStart = validPlayers.length >= 2 && config.name.trim().length > 0;
+    const startHint = config.name.trim().length === 0 ? 'Donne un nom au tournoi' : 'Ajoute au moins 2 joueurs';
 
     const handleStart = () => {
         if (!canStart) return;
@@ -107,6 +119,11 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                     title={<span className="flex items-center gap-3"><img src="/favicon.svg" alt="" className="w-10 h-10 lg:hidden"/>blindr</span>}
                     subtitle="Nouveau tournoi"
                 />
+                {showInstall && (
+                    <div className="mb-6">
+                        <InstallCard onDismiss={dismissInstall}/>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 [&>*]:min-w-0">
                     {/* Config card */}
@@ -383,9 +400,9 @@ export function SetupPage({onNavigate}: SetupPageProps) {
                         size="lg"
                         onClick={handleStart}
                         disabled={!canStart}
-                        className="pointer-events-auto w-full sm:w-auto sm:px-12 shadow-sheet"
+                        className="pointer-events-auto w-full sm:w-auto sm:px-12 shadow-sheet disabled:opacity-100 disabled:bg-sunken disabled:text-ink-muted disabled:border disabled:border-line"
                     >
-                        Lancer le tournoi <ChevronRight size={22}/>
+                        {canStart ? <>Lancer le tournoi <ChevronRight size={22}/></> : startHint}
                     </Button>
                 </div>
             </div>

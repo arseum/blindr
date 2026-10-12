@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Page } from './types';
 import { Navigation } from './components/Navigation';
 import { TournamentEvents } from './components/TournamentEvents';
+import { UpdateToast } from './components/UpdateToast';
 import { SetupPage } from './pages/SetupPage';
 import { TournamentPage } from './pages/TournamentPage';
 import { PlayersPage } from './pages/PlayersPage';
@@ -42,6 +43,7 @@ function App() {
       <Navigation currentPage={currentPage} onNavigate={navigate} />
       <main>{renderPage()}</main>
       <TournamentEvents onNavigate={navigate} />
+      <UpdateToast />
     </div>
   );
 }

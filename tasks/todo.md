@@ -41,11 +41,17 @@ Décisions :
 - [x] Vérification : tests, build, captures téléphone portrait/paysage + tablette, clair/sombre
 
 ## Phase 4 — PWA
-- [ ] `vite-plugin-pwa` : manifest, service worker, fonctionnement hors ligne
-- [ ] Icônes (toutes tailles, maskable), splash screens, `theme-color`
-- [ ] Méta iOS (`apple-mobile-web-app-*`), `lang="fr"` dans `index.html`
-- [ ] Invite d'installation + gestion des mises à jour
-- [ ] Tests sur vrais appareils : iPhone (Safari), Android (Chrome), iPad
+Décisions :
+- Mise à jour en mode « prompt » : jamais de rechargement automatique en plein tournoi. Un bandeau propose « Mettre à jour ».
+- Icônes PNG générées une fois depuis `public/icon.svg` (assets-generator) et commitées : pas de génération au build sur Vercel.
+
+- [x] `vite-plugin-pwa` : manifest (nom, couleurs, standalone), service worker Workbox (précache app + polices + icônes)
+- [x] Icônes : 64/192/512, maskable 512, apple-touch-icon 180, favicon.ico
+- [x] Méta iOS (`apple-mobile-web-app-*`, apple-touch-icon) dans `index.html`
+- [x] Bandeau « Nouvelle version » + « Prêt hors ligne » (`useRegisterSW`)
+- [x] Installation : bouton « Installer » (Android/Chrome via `beforeinstallprompt`), instructions iPhone (Partager → Sur l'écran d'accueil), dans Réglages + bandeau discret sur Config
+- [x] Vérification : build, fichiers servis, test hors ligne (Chrome piloté par CDP)
+- [ ] Test réel par l'utilisateur : installation iPhone + Android, son, vibration, écran allumé
 
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine
@@ -81,3 +87,11 @@ Décisions :
 - Fix : re-entry existait dans le store mais sans bouton ; les positions sont maintenant recalculées comme pour une annulation.
 - Vérifié : 47 tests, build, captures téléphone portrait/paysage, tablette portrait/paysage, clair/sombre, panneau Réglages.
 - Non vérifiable en headless : son, vibration et Wake Lock → à tester sur un vrai téléphone.
+
+### Phase 4 — terminée
+- `vite-plugin-pwa` 2.0 (`registerType: 'prompt'`), manifest Blindr, Workbox précache 24 fichiers (app, police Archivo, icônes).
+- Icônes générées depuis `public/icon.svg` via `npm run icons` (config `pwa-assets.config.ts`), commitées.
+- `UpdateToast` : « prêt hors ligne » / « nouvelle version → Mettre à jour » ; jamais de rechargement automatique.
+- `useInstallPrompt` + `InstallCard` : bouton natif (Chrome/Android), mode d'emploi iPhone ; dans Réglages et sur Config (masquable).
+- Vérifié hors ligne : SW actif, réseau coupé → app, police et écran TV se chargent.
+- Fix : bouton « Lancer le tournoi » désactivé était translucide par-dessus le formulaire ; il dit maintenant ce qui manque.

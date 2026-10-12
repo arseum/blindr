@@ -51,6 +51,12 @@ public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 - **NE PAS** écrire de couleur hex/rgba dans les composants ; dans un `style`, utiliser `var(--color-…)`.
 - Hauteurs plein écran : `min-h-dvh` (jamais `100vh`/`min-h-screen`).
 
+### PWA
+- `vite-plugin-pwa` dans `vite.config.ts` (manifest + Workbox), `registerType: 'prompt'` → `components/UpdateToast.tsx`
+- Icônes : `npm run icons` régénère les PNG de `public/` depuis `public/icon.svg` (`pwa-assets.config.ts`)
+- Installation : `hooks/useInstallPrompt.ts` + `components/InstallCard.tsx`
+- Déploiement : Vercel, automatique à chaque push sur `main` (pas de règle de tag)
+
 ### Conventions
 - Pages reçoivent `onNavigate: (page: Page) => void`
 - Vérifier avec `npm test`, `npm run build`, puis `npm run dev`
