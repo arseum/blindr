@@ -63,7 +63,7 @@ public/ — favicon.svg (icône arrondie), icon.svg (icône pleine, source PWA)
 - `vite-plugin-pwa` dans `vite.config.ts` (manifest + Workbox), `registerType: 'prompt'` → `components/UpdateToast.tsx`
 - Icônes : `npm run icons` régénère les PNG de `public/` depuis `public/icon.svg` (`pwa-assets.config.ts`)
 - Installation : `hooks/useInstallPrompt.ts` + `components/InstallCard.tsx`
-- Déploiement : Vercel, automatique à chaque push sur `main` (pas de règle de tag)
+- Déploiement : Vercel (projet `clash-poker-tournament`, équipe `arseums-projects`), automatique à chaque push sur `main` (pas de règle de tag). Les statuts n'apparaissent pas toujours sur GitHub : vérifier avec `vercel ls clash-poker-tournament --scope arseums-projects` puis `curl` du site (1 à 2 min).
 
 ### Conventions
 - Pages reçoivent `onNavigate: (page: Page) => void`
