@@ -110,8 +110,7 @@ export function defaultManualShares(J: number): number[] {
 }
 
 // ─── UI helpers ───────────────────────────────────────────────────────────────
-const POSITION_MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
-
+/** « 1er », « 2e »… (visuel : composant PlaceCoin). */
 export function positionLabel(pos: number): string {
-  return POSITION_MEDAL[pos] ?? `${pos}e`;
+  return pos === 1 ? '1er' : `${pos}e`;
 }

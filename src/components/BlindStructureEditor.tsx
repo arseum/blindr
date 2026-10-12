@@ -115,9 +115,9 @@ export function BlindStructureEditor({ structure, onChange, playerCount = 0, sta
                     <Coffee size={16} /> Pause
                   </span>
                 ) : (
-                  <span className="flex-1 flex items-baseline gap-2 min-w-0">
-                    <span className="num font-bold text-lg">{formatChips(level.smallBlind)} / {formatChips(level.bigBlind)}</span>
-                    {level.ante > 0 && <span className="text-sm text-ink-muted num">ante {formatChips(level.ante)}</span>}
+                  <span className="flex-1 flex flex-wrap items-baseline gap-x-2 min-w-0">
+                    <span className="num font-bold text-lg whitespace-nowrap">{formatChips(level.smallBlind)} / {formatChips(level.bigBlind)}</span>
+                    {level.ante > 0 && <span className="text-sm text-ink-muted num whitespace-nowrap">ante {formatChips(level.ante)}</span>}
                     {hasError(idx) && <AlertTriangle size={14} className="text-danger self-center" aria-label="Valeur injouable avec ces jetons" />}
                   </span>
                 )}

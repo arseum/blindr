@@ -1,7 +1,8 @@
-import { Trash2, Trophy } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { PlaceCoin } from '../components/ui/PlaceCoin';
 import { useHistoryStore } from '../store/historyStore';
 import { PageHeader } from '../components/PageHeader';
 import { HoldButton } from '../components/ui/HoldButton';
@@ -9,6 +10,32 @@ import type { Page } from '../types';
 
 interface HistoryPageProps {
   onNavigate: (page: Page) => void;
+}
+
+/** Pile de jetons décalés pour l'état vide. */
+const STACK = [
+  { chip: 5, x: -46, y: 12, r: -14 },
+  { chip: 10, x: 44, y: 14, r: 10 },
+  { chip: 500, x: -14, y: -2, r: -4 },
+  { chip: 1000, x: 16, y: -14, r: 8 },
+  { chip: 25, x: -4, y: -30, r: -6 },
+];
+
+function ChipStack() {
+  return (
+    <div aria-hidden="true" className="relative mx-auto mb-6 h-28 w-40">
+      {STACK.map(c => (
+        <span
+          key={c.chip}
+          className="chip-coin absolute left-1/2 top-1/2 w-14 cursor-[inherit]"
+          style={{
+            '--c': `var(--color-chip-${c.chip})`,
+            transform: `translate(calc(-50% + ${c.x}px), calc(-50% + ${c.y}px)) rotate(${c.r}deg)`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
 }
 
 export function HistoryPage({ onNavigate }: HistoryPageProps) {
@@ -29,11 +56,9 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
 
         {entries.length === 0 ? (
           <Card className="text-center py-16">
-            <div className="mx-auto mb-4 flex justify-center">
-              <Trophy size={48} className="text-ink-faint" />
-            </div>
-            <p className="text-ink-faint font-display text-xl">Aucun tournoi terminé</p>
-            <p className="text-ink-faint text-sm mt-2">Les résultats apparaîtront ici à la fin de chaque tournoi</p>
+            <ChipStack />
+            <p className="text-ink font-display font-bold text-xl">Aucun tournoi terminé</p>
+            <p className="text-ink-muted text-sm mt-2">Les résultats apparaîtront ici à la fin de chaque tournoi</p>
             <Button className="mt-6" onClick={() => onNavigate('setup')}>Configurer un tournoi</Button>
           </Card>
         ) : (
@@ -51,7 +76,8 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
                   </div>
                   <button
                     onClick={() => removeEntry(entry.id)}
-                    className="text-ink-faint hover:text-danger transition-colors"
+                    aria-label={`Supprimer ${entry.name}`}
+                    className="grid place-items-center w-11 h-11 -mt-2 -mr-2 rounded-full text-ink-faint hover:text-danger hover:bg-danger/10 transition-colors"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -59,32 +85,30 @@ export function HistoryPage({ onNavigate }: HistoryPageProps) {
 
                 <div className="grid grid-cols-4 divide-x divide-line/40 mt-4 border-t border-line/40 pt-4">
                   <div className="text-center px-2">
-                    <div className="font-display font-bold text-lg text-ink">{entry.playerCount}</div>
+                    <div className="num-display text-3xl text-ink">{entry.playerCount}</div>
                     <div className="text-ink-faint text-xs">joueurs</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-display font-bold text-lg text-ink">{entry.duration}min</div>
+                    <div className="num-display text-3xl text-ink">{entry.duration}<span className="text-base text-ink-muted"> min</span></div>
                     <div className="text-ink-faint text-xs">durée</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-display font-bold text-lg text-accent">{entry.totalPot}€</div>
+                    <div className="num-display text-3xl text-accent">{entry.totalPot}<span className="text-base"> €</span></div>
                     <div className="text-ink-faint text-xs">pot</div>
                   </div>
                   <div className="text-center px-2">
-                    <div className="font-display font-bold text-lg text-success">{entry.buyIn}€</div>
+                    <div className="num-display text-3xl text-success">{entry.buyIn}<span className="text-base"> €</span></div>
                     <div className="text-ink-faint text-xs">buy-in</div>
                   </div>
                 </div>
 
                 {entry.placements.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="font-display text-sm text-ink-muted mb-2 uppercase tracking-wide">Classement</h4>
+                    <h4 className="text-sm font-semibold text-ink-muted mb-2">Classement</h4>
                     <div className="flex flex-wrap gap-2">
                       {entry.placements.slice(0, 5).map((p, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5 bg-sunken rounded-lg px-2.5 py-1.5">
-                          <span className={`font-display font-bold text-sm ${idx === 0 ? 'text-accent' : idx === 1 ? 'text-ink-muted' : idx === 2 ? 'text-chip-5000' : 'text-ink-faint'}`}>
-                            #{p.position}
-                          </span>
+                        <div key={idx} className="flex items-center gap-1.5 bg-sunken rounded-full pl-1.5 pr-3 py-1.5">
+                          <PlaceCoin position={p.position} className="w-7 text-xs" />
                           <span className="text-ink text-sm">{p.playerName}</span>
                           {p.prize > 0 && (
                             <Badge variant="success">{p.prize}€</Badge>

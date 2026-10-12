@@ -43,7 +43,7 @@ export function ChipTimer({ totalSeconds, secondsRemaining, size, className = ''
           );
         })}
       </div>
-      <div className="text-xs text-ink-muted num">
+      <div className="text-xs text-ink-muted num short:hidden">
         1 jeton = {formatMinutes(minutesPerChip)}
       </div>
     </div>

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { TV_SYNC_KEY } from '../timer';
 import { formatTime, formatChips, TV_EFFECT_KEY } from '../constants';
-import { calculatePrizes, getPaidPlaces, positionLabel } from '../utils/prizePool';
+import { calculatePrizes, getPaidPlaces } from '../utils/prizePool';
+import { PlaceCoin } from '../components/ui/PlaceCoin';
 import { levelChip } from '../utils/chips';
 import { bubbleState } from '../utils/bubble';
+import { ChipTimer } from '../components/ChipTimer';
 import { Odometer } from '../components/ui/Odometer';
 import { LevelTransitionOverlay } from '../components/LevelTransitionOverlay';
 import type { TransitionEffect } from '../utils/transitionEffect';
@@ -20,6 +22,22 @@ function readInitialState(): TournamentState | null {
 export function DisplayPage() {
   const [tournament, setTournament] = useState<TournamentState | null>(readInitialState);
   const [transition, setTransition] = useState<{ effect: TransitionEffect; label: string } | null>(null);
+
+  // L'écran TV est toujours sombre, quel que soit le réglage. tokens.css ne lit data-scheme que sur <html>,
+  // et ColorSchemeProvider (monté au-dessus) le réécrit après nous : on le ré-impose tant que la page vit.
+  useEffect(() => {
+    const root = document.documentElement;
+    const previous = root.getAttribute('data-scheme');
+    const force = () => { if (root.getAttribute('data-scheme') !== 'dark') root.setAttribute('data-scheme', 'dark'); };
+    force();
+    const observer = new MutationObserver(force);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-scheme'] });
+    return () => {
+      observer.disconnect();
+      if (previous === null) root.removeAttribute('data-scheme');
+      else root.setAttribute('data-scheme', previous);
+    };
+  }, []);
 
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
@@ -50,7 +68,6 @@ export function DisplayPage() {
   const prizePoolAmount = Math.round(totalPot * config.prizePool.prizePoolPct / 100);
   const prizes        = calculatePrizes(prizePoolAmount, players.length, config.prizePool);
   const paidPlaces    = getPaidPlaces(players.length, config.prizePool.itmPct);
-  const levelProgress = 1 - secondsRemaining / (currentLevel.duration * 60);
   const isWarning     = secondsRemaining <= 60 && !currentLevel.isBreak;
   const bubble        = bubbleState(activePlayers.length, paidPlaces);
 
@@ -62,7 +79,11 @@ export function DisplayPage() {
   } : {};
 
   return (
-    <div data-chip={levelChip(currentLevel)} className="min-h-dvh flex flex-col relative overflow-hidden bg-canvas text-ink">
+    <div
+      data-chip={levelChip(currentLevel)}
+      className="h-dvh flex flex-col relative overflow-hidden bg-canvas text-ink"
+      style={{ backgroundImage: 'radial-gradient(ellipse 80% 70% at 50% 38%, color-mix(in srgb, var(--color-accent) 16%, var(--color-canvas)), var(--color-canvas) 55%, var(--color-sunken) 100%)' }}
+    >
       {transition && (
         <LevelTransitionOverlay
           effect={transition.effect}
@@ -72,43 +93,55 @@ export function DisplayPage() {
       )}
 
       <div
-        className={`relative z-10 flex flex-col min-h-dvh${transition?.effect === 'radial' ? ' wave-active' : ''}`}
+        className={`relative z-10 flex flex-col h-full min-h-0${transition?.effect === 'radial' ? ' wave-active' : ''}`}
         style={shakeStyle}
       >
         {/* Top bar */}
-        <div data-wave="1" className="flex items-center justify-between px-4 sm:px-10 pt-4 sm:pt-7 pb-2 sm:pb-3 gap-2">
-          <div className="text-sm sm:text-xl lg:text-2xl font-semibold text-ink-muted truncate">
+        <div data-wave="1" className="flex items-center justify-between gap-4 px-[3vw] pt-[2.4vh] pb-[1vh]">
+          <div className="font-semibold text-ink-muted truncate" style={{ fontSize: 'clamp(0.9rem, 3vh, 2.2rem)' }}>
             {config.name}
           </div>
-          <div className="font-display text-sm sm:text-xl lg:text-3xl font-extrabold uppercase text-accent flex-shrink-0">
+          <div className="font-display font-extrabold uppercase text-accent flex-shrink-0" style={{ fontSize: 'clamp(1.1rem, 4.4vh, 3.2rem)', lineHeight: 1 }}>
             {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
           </div>
         </div>
 
         {bubble === 'bubble' && (
-          <div className="mx-4 sm:mx-10 px-6 py-3 rounded-card bg-danger text-on-accent text-center font-display font-extrabold uppercase text-2xl sm:text-4xl motion-safe:animate-pulse">
+          <div
+            className="mx-[3vw] px-6 py-[0.8vh] rounded-card bg-danger text-on-accent text-center font-display font-extrabold uppercase motion-safe:animate-pulse"
+            style={{ fontSize: 'clamp(1rem, 3.4vh, 2.4rem)' }}
+          >
             Bulle ! Le prochain éliminé repart sans rien
           </div>
         )}
 
-        {/* Center — Timer + Blinds */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-12 gap-3 sm:gap-6">
+        {/* Centre : chrono, jetons, blindes */}
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center px-[3vw] gap-[1.6vh]">
           <div
             data-wave="0"
             className={`num-display select-none transition-colors ${isWarning ? 'text-danger motion-safe:animate-pulse' : 'text-ink'}`}
-            style={{ fontSize: 'clamp(6rem, 28vw, 24rem)' }}
+            style={{ fontSize: 'min(27vh, 30vw)' }}
           >
             {formatTime(secondsRemaining)}
           </div>
 
+          <div data-wave="4" className="w-full" style={{ maxWidth: 'min(88vw, 150vh)' }}>
+            <ChipTimer
+              totalSeconds={currentLevel.duration * 60}
+              secondsRemaining={secondsRemaining}
+              size="7vh"
+              className="items-center"
+            />
+          </div>
+
           {!currentLevel.isBreak && (
-            <div data-wave="2" className="flex flex-wrap items-center justify-center gap-3 sm:gap-8 lg:gap-12">
+            <div data-wave="2" className="flex items-end justify-center gap-[3vw]">
               <BlindBlock label="Petite blinde" value={formatChips(currentLevel.smallBlind)} />
-              <div className="text-4xl sm:text-7xl font-thin text-ink-faint">/</div>
+              <Sep>/</Sep>
               <BlindBlock label="Grosse blinde" value={formatChips(currentLevel.bigBlind)} />
               {currentLevel.ante > 0 && (
                 <>
-                  <div className="text-4xl sm:text-7xl font-thin text-ink-faint">+</div>
+                  <Sep>+</Sep>
                   <BlindBlock label="Ante" value={formatChips(currentLevel.ante)} accent />
                 </>
               )}
@@ -116,55 +149,51 @@ export function DisplayPage() {
           )}
 
           {nextLevel && (
-            <div data-wave="3" className="text-ink-muted text-xs sm:text-lg lg:text-xl text-center px-2 num">
-              Prochain niveau :{' '}
-              {nextLevel.isBreak
-                ? 'pause'
-                : `${formatChips(nextLevel.smallBlind)} / ${formatChips(nextLevel.bigBlind)}${nextLevel.ante ? ` + ${formatChips(nextLevel.ante)}` : ''}`
-              }
-              {' '}({nextLevel.duration} min)
+            <div
+              data-wave="3"
+              className="text-ink-muted text-center num flex items-baseline gap-[0.8em] rounded-full border border-line bg-surface px-[1.4em] py-[0.35em]"
+              style={{ fontSize: 'clamp(0.9rem, 3vh, 2.2rem)' }}
+            >
+              <span className="uppercase tracking-wide text-ink-faint" style={{ fontSize: '0.7em' }}>Ensuite</span>
+              <span className="text-ink font-bold">
+                {nextLevel.isBreak
+                  ? 'Pause'
+                  : `${formatChips(nextLevel.smallBlind)} / ${formatChips(nextLevel.bigBlind)}${nextLevel.ante ? ` + ${formatChips(nextLevel.ante)}` : ''}`
+                }
+              </span>
+              <span>{nextLevel.duration} min</span>
             </div>
           )}
         </div>
 
-        {/* Progress bar */}
-        <div data-wave="4" className="w-full timer-bar-track">
-          <div
-            className={`timer-bar-fill${isWarning ? ' timer-bar-warning' : ''}`}
-            style={{ width: `${levelProgress * 100}%` }}
-          />
-        </div>
-
-        {/* Bottom stats */}
-        <div data-wave="5" className="grid grid-cols-2 sm:grid-cols-4 border-t border-line bg-surface">
+        {/* Bande du bas */}
+        <div data-wave="5" className="grid grid-cols-4 border-t border-line bg-surface" style={{ height: '21vh' }}>
           <StatBlock label="Joueurs" value={String(activePlayers.length)} sub={`/ ${players.length}`} />
           <StatBlock label="Tapis moyen" value={formatChips(avgStack)} />
           <StatBlock label="Pot total" value={`${totalPot} €`} />
 
-          <div className="col-span-2 sm:col-span-1 flex flex-col py-3 sm:py-5 px-3 sm:px-5 border-t border-line sm:border-t-0 min-h-0">
-            <div className="text-ink-muted text-xs sm:text-base mb-2 text-center">
-              Prize pool <span className="text-ink-faint text-xs num">· {paidPlaces} payés sur {players.length}</span>
+          <div className="flex flex-col justify-center min-h-0 px-[1.2vw] py-[1vh]">
+            <div className="text-ink-muted text-center mb-[0.6vh]" style={{ fontSize: 'clamp(0.7rem, 2.1vh, 1.5rem)' }}>
+              Prize pool <span className="text-ink-faint num">· {paidPlaces} payés sur {players.length}</span>
             </div>
-            <div className="overflow-hidden" style={{ height: '6.5rem' }}>
+            <div className="overflow-hidden" style={{ height: '10.8vh' }}>
               <div
-                className="flex flex-col gap-1"
+                className="flex flex-col"
                 style={prizes.length > 3 ? {
                   animation: `prizeScroll ${prizes.length * 2.5}s ease-in-out infinite alternate`,
-                  '--prize-scroll-dist': `-${(prizes.length - 3) * 30}px`,
+                  '--prize-scroll-dist': `${-(prizes.length - 3) * 3.6}vh`,
                 } as React.CSSProperties : undefined}
               >
                 {prizes.map(({ position, percentage, amount }) => (
-                  <div key={position} className="flex items-center gap-2 rounded px-2 py-0.5 text-xs sm:text-sm flex-shrink-0 num">
-                    <span className={`font-bold w-6 text-xs ${position <= 3 ? 'text-ink' : 'text-ink-faint'}`}>
-                      {positionLabel(position)}
-                    </span>
+                  <div key={position} className="flex items-center gap-[0.8vw] px-[0.4vw] flex-shrink-0 num" style={{ height: '3.6vh', fontSize: 'clamp(0.65rem, 2vh, 1.4rem)' }}>
+                    <PlaceCoin position={position} className="w-[3.2vh] text-[1.4vh]" />
                     <div className="flex-1">
-                      <div className="h-1 bg-sunken rounded-full overflow-hidden">
+                      <div className="h-[0.7vh] bg-sunken rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-accent" style={{ width: `${percentage}%` }} />
                       </div>
                     </div>
-                    <span className="text-ink-faint text-xs w-8 text-right">{percentage}%</span>
-                    <span className="font-bold text-xs w-12 text-right text-ink">{amount} €</span>
+                    <span className="text-ink-faint text-right" style={{ minWidth: '3ch' }}>{percentage}%</span>
+                    <span className="font-bold text-right text-ink" style={{ minWidth: '4.5ch' }}>{amount} €</span>
                   </div>
                 ))}
               </div>
@@ -192,11 +221,17 @@ function DisplayIdle() {
   );
 }
 
+function Sep({ children }: { children: string }) {
+  return (
+    <div className="font-thin text-ink-faint pb-[1.2vh]" style={{ fontSize: 'min(9vh, 6vw)', lineHeight: 1 }}>{children}</div>
+  );
+}
+
 function BlindBlock({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="text-center">
-      <div className="text-ink-muted text-xs sm:text-lg lg:text-xl mb-1 sm:mb-2">{label}</div>
-      <div className={`num-display ${accent ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'clamp(2.5rem, 8vw, 7rem)' }}>
+      <div className="text-ink-muted mb-[0.6vh]" style={{ fontSize: 'clamp(0.8rem, 2.4vh, 1.8rem)' }}>{label}</div>
+      <div className={`num-display ${accent ? 'text-accent' : 'text-ink'}`} style={{ fontSize: 'min(17vh, 11vw)' }}>
         <Odometer value={value} />
       </div>
     </div>
@@ -205,12 +240,12 @@ function BlindBlock({ label, value, accent = false }: { label: string; value: st
 
 function StatBlock({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="flex flex-col items-center py-4 sm:py-7 border-r border-line last:border-r-0">
-      <div className="text-ink-muted text-xs sm:text-base lg:text-lg mb-1 sm:mb-2 text-center px-2">{label}</div>
-      <div className="num-display text-ink" style={{ fontSize: 'clamp(2rem, 5vw, 5rem)' }}>
+    <div className="flex flex-col items-center justify-center border-r border-line min-h-0">
+      <div className="text-ink-muted text-center px-2" style={{ fontSize: 'clamp(0.7rem, 2.1vh, 1.5rem)' }}>{label}</div>
+      <div className="num-display text-ink" style={{ fontSize: 'min(8.5vh, 5.5vw)' }}>
         {value}
       </div>
-      {sub && <div className="text-ink-faint text-xs sm:text-base mt-1 num">{sub}</div>}
+      {sub && <div className="text-ink-faint mt-[0.4vh] num" style={{ fontSize: 'clamp(0.7rem, 2.1vh, 1.5rem)' }}>{sub}</div>}
     </div>
   );
 }

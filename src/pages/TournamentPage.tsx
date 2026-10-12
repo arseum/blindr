@@ -12,7 +12,8 @@ import { PageHeader } from '../components/PageHeader';
 import { EmptyTournament } from '../components/EmptyTournament';
 import { useTournamentStore } from '../store/tournamentStore';
 import { formatTime, formatChips } from '../constants';
-import { calculatePrizes, getPaidPlaces, positionLabel } from '../utils/prizePool';
+import { calculatePrizes, getPaidPlaces } from '../utils/prizePool';
+import { PlaceCoin } from '../components/ui/PlaceCoin';
 import type { BlindLevel, Page } from '../types';
 
 interface TournamentPageProps {
@@ -106,12 +107,12 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
               <div className="font-display text-2xl short:text-lg font-extrabold uppercase text-accent">
                 {currentLevel.isBreak ? 'Pause' : `Niveau ${currentLevel.level}`}
               </div>
-              {!isRunning && <span className="text-xs font-bold px-2 py-1 rounded-[6px] bg-ink text-canvas">En pause</span>}
+              {!isRunning && <span className="text-xs font-bold px-2 py-1 rounded-[6px] bg-accent text-on-accent motion-safe:animate-pulse">En pause</span>}
               {isRunning && bubble === 'itm' && <span className="text-xs font-bold px-2 py-1 rounded-[6px] bg-success/15 text-success">Dans l'argent</span>}
             </div>
 
             <div
-              className={`num-display text-[clamp(5.5rem,30vw,9rem)] md:text-[clamp(6rem,13vw,11rem)] short:text-[22vh] transition-opacity ${isWarning ? 'text-danger' : 'text-ink'} ${isRunning ? '' : 'opacity-50'}`}
+              className={`num-display text-[clamp(5.5rem,30vw,9rem)] md:text-[clamp(6rem,13vw,11rem)] short:text-[22vh] transition-opacity ${isWarning ? 'text-danger' : 'text-ink'} ${isRunning ? '' : 'opacity-70'}`}
             >
               {formatTime(secondsRemaining)}
             </div>
@@ -131,6 +132,8 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
             </div>
           )}
 
+          {/* En paysage téléphone, commandes et boutons « maintenir » sur une seule ligne */}
+          <div className="flex flex-col gap-4 short:flex-row short:items-center short:gap-3">
           <div className="flex items-center justify-center gap-5 pt-2 short:pt-0 short:justify-start">
             <RoundButton label="Niveau précédent" onClick={prevLevel} disabled={currentLevelIndex === 0}>
               <SkipBack size={22} />
@@ -138,7 +141,7 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
             <button
               onClick={isRunning ? pauseTimer : startTimer}
               aria-label={isRunning ? 'Mettre en pause' : 'Lancer le timer'}
-              className={`grid place-items-center w-20 h-20 short:w-16 short:h-16 rounded-[22px] short:rounded-[18px] transition-[filter,transform] active:scale-95 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${isRunning ? 'bg-ink text-canvas' : 'bg-accent text-on-accent'}`}
+              className={`grid place-items-center w-20 h-20 short:w-16 short:h-16 rounded-[22px] short:rounded-[18px] transition-[filter,transform] active:scale-95 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${isRunning ? 'bg-accent/15 text-accent ring-2 ring-inset ring-accent' : 'bg-accent text-on-accent shadow-raised'}`}
             >
               {isRunning ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
             </button>
@@ -146,15 +149,16 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
               <SkipForward size={22} />
             </RoundButton>
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-2 gap-2 pt-1 short:pt-0 short:flex-1">
             <HoldButton tone="neutral" onConfirm={resetTimer} doneLabel="Niveau recommencé" className="text-sm">
-              <RotateCcw size={15} /> Recommencer
+              <RotateCcw size={15} /> <span className="short:sr-only">Recommencer</span>
             </HoldButton>
             <HoldButton onConfirm={endTournament} doneLabel="Tournoi terminé" className="text-sm">
-              <Flag size={15} /> Terminer
+              <Flag size={15} /> <span className="short:sr-only">Terminer</span>
             </HoldButton>
           </div>
-          <p className="text-xs text-ink-faint text-center">
+          </div>
+          <p className="text-xs text-ink-faint text-center short:hidden">
             Touche le chrono pour pause, glisse-le pour changer de niveau. Maintiens les boutons du bas pour confirmer.
           </p>
         </section>
@@ -187,7 +191,7 @@ export function TournamentPage({ onNavigate }: TournamentPageProps) {
             <ol className="flex flex-col max-h-60 overflow-y-auto">
               {prizes.map(({ position, percentage, amount }) => (
                 <li key={position} className="flex items-center gap-3 py-2 border-b border-line last:border-0 num">
-                  <span className="w-8 flex-none text-ink-muted">{positionLabel(position)}</span>
+                  <PlaceCoin position={position} />
                   <span className="flex-1 h-1.5 bg-sunken rounded-full overflow-hidden">
                     <span className="block h-full rounded-full bg-accent" style={{ width: `${percentage}%` }} />
                   </span>

@@ -87,6 +87,14 @@ Décisions :
 - [x] Suppression de `DEFAULT_BLIND_STRUCTURE` (inutilisé)
 - [x] ESLint à zéro : tirages aléatoires et `Date.now` hors du rendu (`useState` paresseux), `utils/transitionEffect.ts`, `contexts/colorScheme.ts` (constantes + hook), `_get`, `catch {}` commenté
 
+## Identité « Jeton » sur toute l'app
+- [x] Jeton de 100 framboise au lieu de noir (l'app devenait noire aux premiers niveaux)
+- [x] Timer : jetons de places payées, pause et lecture en couleur du niveau, paysage sans débordement
+- [x] Joueurs : jetons-avatars, éliminés grisés ; Historique : pile de jetons, podium en jetons
+- [x] Prize Pool : interrupteurs, − / +, barre de répartition, jetons
+- [x] Écran TV : toujours sombre, ChipTimer, couleur du niveau, tient en 720p et 1080p
+- [ ] Tables + tirage des places : table ovale (maquettes à valider d'abord)
+
 ## Phase 5 — Publication
 - [ ] Hébergement (ex. Cloudflare Pages) + domaine
 - [ ] Vrai README

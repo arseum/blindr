@@ -5,6 +5,7 @@ import { EmptyTournament } from '../components/EmptyTournament';
 import { SwipeRow } from '../components/ui/SwipeRow';
 import { UndoToast } from '../components/ui/UndoToast';
 import { Odometer } from '../components/ui/Odometer';
+import { PlayerCoin } from '../components/ui/PlayerCoin';
 import { feedback } from '../utils/feedback';
 import { useTournamentStore } from '../store/tournamentStore';
 import type { Page, Player, TournamentState } from '../types';
@@ -67,11 +68,12 @@ export function PlayersPage({ onNavigate }: PlayersPageProps) {
         <ul className="rounded-card bg-surface border border-line divide-y divide-line overflow-hidden">
           {active.filter(matches).map(player => (
             <SwipeRow key={player.id} actionLabel={<><UserMinus size={18} /> Éliminer</>} onSwipe={() => eliminate(player)}>
-              <div className="flex items-center gap-3 pl-4 pr-2 min-h-14">
-                <span className="flex-1 min-w-0">
-                  <span className="block font-semibold truncate">{player.name}</span>
-                  {tableName(player.tableId) && <span className="block text-xs text-ink-muted">{tableName(player.tableId)}</span>}
-                </span>
+              <div className="flex items-center gap-3 pl-3 pr-2 min-h-16">
+                <PlayerCoin name={player.name} />
+                <span className="flex-1 min-w-0 font-semibold truncate">{player.name}</span>
+                {tableName(player.tableId) && (
+                  <span className="flex-none rounded-full bg-sunken px-2 py-0.5 text-xs font-semibold text-ink-muted num">{tableName(player.tableId)}</span>
+                )}
                 <button
                   onClick={() => eliminate(player)}
                   aria-label={`Éliminer ${player.name}`}
@@ -93,9 +95,12 @@ export function PlayersPage({ onNavigate }: PlayersPageProps) {
           <h2 id="out-h" className="text-sm font-semibold text-ink-muted mb-2">Éliminés</h2>
           <ul className="rounded-card bg-surface border border-line divide-y divide-line overflow-hidden">
             {eliminated.filter(matches).map(player => (
-              <li key={player.id} className="flex items-center gap-3 pl-4 pr-2 min-h-14">
-                <span className="w-9 flex-none font-bold text-ink-muted num">{player.position}e</span>
-                <span className="flex-1 min-w-0 truncate text-ink-muted">{player.name}</span>
+              <li key={player.id} className="flex items-center gap-3 pl-3 pr-2 min-h-16">
+                <PlayerCoin name={player.name} eliminated />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate text-ink-muted">{player.name}</span>
+                  <span className="block text-xs font-bold text-ink-faint num">{player.position}e place</span>
+                </span>
                 {canReEnter(tournament, player) && (
                   <button
                     onClick={() => rebuyPlayer(player.id)}

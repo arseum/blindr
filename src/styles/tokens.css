@@ -27,7 +27,7 @@
   --color-chip-5:    #c0392b;  /* rouge */
   --color-chip-10:   #1f5fae;  /* bleu */
   --color-chip-25:   #1d7a4c;  /* vert — couleur de marque */
-  --color-chip-100:  #1c1e21;  /* noir */
+  --color-chip-100:  #b0306c;  /* framboise — le noir éteignait l'app aux premiers niveaux (BB 100 à 400) */
   --color-chip-500:  #5b3f9e;  /* violet */
   --color-chip-1000: #8f6400;  /* jaune → ocre */
   --color-chip-5000: #a84a17;  /* orange */
@@ -63,7 +63,7 @@
     --color-chip-5:    #f06a5a;
     --color-chip-10:   #6aa3f0;
     --color-chip-25:   #4fc488;
-    --color-chip-100:  #e6e7e3;  /* le noir devient ivoire sur fond sombre */
+    --color-chip-100:  #f07aae;
     --color-chip-500:  #ab8de8;
     --color-chip-1000: #e3b23c;
     --color-chip-5000: #f08a4b;
@@ -85,7 +85,7 @@
   --color-chip-5:    #f06a5a;
   --color-chip-10:   #6aa3f0;
   --color-chip-25:   #4fc488;
-  --color-chip-100:  #e6e7e3;
+  --color-chip-100:  #f07aae;
   --color-chip-500:  #ab8de8;
   --color-chip-1000: #e3b23c;
   --color-chip-5000: #f08a4b;

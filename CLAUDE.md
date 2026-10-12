@@ -33,13 +33,14 @@ src/
     BubbleBurst.tsx      — célébration quand la bulle éclate
     BlindCurve.tsx       — montée des blindes en barres
     ui/ChipWheel.tsx     — roulette de jetons (doigt, souris, molette, flèches)
+    ui/PlaceCoin.tsx (place payée en jeton or/argent/bronze), ui/PlayerCoin.tsx (jeton-avatar d'un joueur)
     ui/Odometer.tsx, ui/Stepper.tsx (− valeur +), ui/HoldButton.tsx (maintenir pour confirmer), ui/SwipeRow.tsx (glisser pour agir), ui/UndoToast.tsx
     ui/Button.tsx        — variants primary/secondary/danger/success/ghost
     ui/Card.tsx          — prop highlight= (liseré accent)
     ui/Input.tsx, ui/Badge.tsx (accent/neutral/danger/success/special)
     BlindStructureEditor, PrizePoolSetupCard, EndTournamentOverlay, LevelTransitionOverlay
 
-  pages/  SetupPage (Config), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, synchro via storage events)
+  pages/  SetupPage (Config), TournamentPage (Timer), PlayersPage, TablesPage, HistoryPage, DisplayPage (?display, toujours sombre, synchro via storage events)
   hooks/useWakeLock.ts — écran allumé pendant le jeu
   utils/sound.ts       — sons Web Audio (débloqués au premier toucher dans main.tsx) + vibrate()
   utils/feedback.ts    — feedback('tick' | 'select' | 'eliminate' | …) : son + vibration selon les Réglages. Tout geste passe par là.
